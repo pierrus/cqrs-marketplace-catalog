@@ -1,0 +1,21 @@
+{
+  "version": "1.0.0-*",
+
+  "dependencies": {
+    "CQRSlite": "0.11.0",
+    "NETStandard.Library": "1.6.0",
+    "Microsoft.EntityFrameworkCore": "1.1.0",
+    "Npgsql.EntityFrameworkCore.PostgreSQL": "1.1.0-preview1-final",
+    "Npgsql.EntityFrameworkCore.PostgreSQL.Design": "1.1.0-preview1-final",
+    "Newtonsoft.Json": "9.0.1",
+    "MongoDB.Bson": "2.4.2",
+    "MongoDB.Driver.Core": "2.4.2",
+    "MongoDB.Driver": "2.4.2"
+  },
+
+  "frameworks": {
+    "netstandard1.5": {
+      "imports": "dnxcore50"
+    }
+  }
+}
