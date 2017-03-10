@@ -6,7 +6,7 @@ namespace CQRSCode.ReadModel.Events
 {
     public class ProductCategoryDefined : IEvent 
 	{
-        public readonly Guid CategoryId;
+        public Guid CategoryId { get; set; }
 
         public List<Guid> CategoriesHierarchy { get; set; }
         

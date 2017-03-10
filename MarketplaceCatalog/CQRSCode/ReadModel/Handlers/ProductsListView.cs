@@ -48,6 +48,8 @@ namespace CQRSCode.ReadModel.Handlers
             _productsRepository.Delete(prod);
         }
 
+        // This operation might take a long time
+        // Better to just deactivate the products ? Think about it as a cache
         public void Handle(CategoryDeactivated message)
         {
             var prods = _productsRepository

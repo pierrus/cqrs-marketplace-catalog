@@ -83,20 +83,5 @@ namespace CQRSCode.WriteModel.Handlers
 
             _session.Commit();
         }
-
-        // internal List<Guid> GetCategoriesHierarchy(Guid categoryId)
-        // {
-        //     List<Guid> catIds = new List<Guid>();
-
-        //     Guid? parentId = categoryId;
-        //     while(parentId != null)
-        //     {
-        //         catIds.Insert(0, parentId.Value);
-        //         var cat = _session.Get<Category>(parentId.Value);
-        //         parentId = cat.ParentId;
-        //     }
-            
-        //     return catIds;
-        // }
     }
 }

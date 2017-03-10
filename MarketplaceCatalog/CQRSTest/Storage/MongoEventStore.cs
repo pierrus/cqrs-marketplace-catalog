@@ -19,7 +19,7 @@ namespace CQRSTests.Storage
     public MongoEventStore()
     {
       this._publisherMock = new Mock<IEventPublisher>();
-      this._eStore = new CQRSCode.WriteModel.EventStore.Mongo.EventStore(this._publisherMock.Object, "mongodb://localhost:27017", "marketplacecatalog");
+      this._eStore = new CQRSCode.WriteModel.EventStore.Mongo.EventStore(this._publisherMock.Object, "mongodb://localhost:27017", "marketplacecatalog", new List<Type>() { typeof(OfferCreated), typeof(ProductCreated), typeof(OfferStockSet) });
     }
 
     [Fact]
@@ -40,18 +40,18 @@ namespace CQRSTests.Storage
       Guid guid1 = Guid.NewGuid();
       Guid guid2 = Guid.NewGuid();
       List<IEvent> ieventList = new List<IEvent>();
+      
       ProductCreated productCreated = new ProductCreated(guid1, "name", "description", true, true);
       DateTimeOffset utcNow1 = DateTimeOffset.UtcNow;
-
       productCreated.TimeStamp = utcNow1;
-
       int num1 = 1;
       productCreated.Version = num1;
       ieventList.Add((IEvent) productCreated);
+      
+      
       OfferCreated offerCreated = new OfferCreated(guid1, guid2, Guid.NewGuid(), (short) 1, Decimal.One, true, "mysku2", "mymerchant", true, true);
       DateTimeOffset utcNow2 = DateTimeOffset.UtcNow;
       offerCreated.TimeStamp = utcNow2;
-
       int num2 = 2;
       offerCreated.Version = num2;
       ieventList.Add((IEvent) offerCreated);
@@ -59,12 +59,13 @@ namespace CQRSTests.Storage
       OfferStockSet offerStockSet = new OfferStockSet(guid1, guid2, (short) 1);
       DateTimeOffset utcNow3 = DateTimeOffset.UtcNow;
       offerStockSet.TimeStamp = utcNow3;
-
       int num3 = 3;
       offerStockSet.Version = num3;
       ieventList.Add((IEvent) offerStockSet);
+      
       this._eStore.Save<Product>((IEnumerable<IEvent>) ieventList);
       IEnumerable<IEvent> source = this._eStore.Get<Product>(guid1, -1);
+      
       Assert.NotNull((object) source);
       Assert.Equal(3, source.Count<IEvent>());
     }

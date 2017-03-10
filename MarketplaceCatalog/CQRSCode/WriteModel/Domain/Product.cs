@@ -163,9 +163,6 @@ namespace CQRSCode.WriteModel.Domain
                                                             Offers.Count(o => o.Visible),
                                                             Offers.Where(o => o.Visible).Select(o => o.Price).ToList()
                                                         ));
-
-            foreach (var offer in Offers)
-                ApplyChange(new OfferPublishedToMerchant(this.Id, offer.Id, offer.MerchantId));
         }
 
         private void Unpublish()
@@ -174,19 +171,24 @@ namespace CQRSCode.WriteModel.Domain
 
             if (CategoryId.HasValue)
                 ApplyChange(new ProductUnpublishedFromCategory(this.Id, CategoryId.Value));
-        
-            foreach (var offer in Offers)
-                ApplyChange(new OfferUnpublishedFromMerchant(this.Id, offer.Id, offer.MerchantId));                          
         }
 
         private void UnpublishOffer(Guid offerId)
         {
             ApplyChange(new OfferHidden(this.Id, offerId));
+
+            var offer = Offers.Where(o => o.Id == offerId).FirstOrDefault();
+
+            ApplyChange(new OfferUnpublishedFromMerchant(this.Id, offerId, offer.MerchantId));
         }
 
         private void PublishOffer(Guid offerId)
         {
             ApplyChange(new OfferDisplayed(this.Id, offerId));
+            
+            var offer = Offers.Where(o => o.Id == offerId).FirstOrDefault();
+
+            ApplyChange(new OfferPublishedToMerchant(this.Id, offerId, offer.MerchantId));
         }
 
         private Product()

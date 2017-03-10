@@ -5,8 +5,8 @@ namespace CQRSCode.ReadModel.Events
 {
     public class OfferStockSet : IEvent 
 	{
-        public readonly Guid OfferId;
-        public readonly Int16 Stock;
+        public Guid OfferId { get; set; }
+        public Int16 Stock { get; set; }
         
         public OfferStockSet(Guid id, Guid offerId, Int16 stock) 
         {

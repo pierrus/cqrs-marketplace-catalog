@@ -1,6 +1,5 @@
 ﻿using System;
 using CQRSlite.Events;
-using System.Collections.Generic;
 
 namespace CQRSCode.ReadModel.Events
 {

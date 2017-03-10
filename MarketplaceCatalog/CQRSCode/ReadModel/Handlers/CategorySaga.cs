@@ -9,8 +9,7 @@ using System.Collections.Generic;
 
 namespace CQRSCode.ReadModel.Handlers
 {
-	public class CategorySaga : IEventHandler<CategoryActivated>,
-                                IEventHandler<CategoryDeactivated>
+	public class CategorySaga : IEventHandler<CategoryActivated>
     {
         private readonly IRepository<ProductDto> _productRepository;
 
@@ -29,10 +28,14 @@ namespace CQRSCode.ReadModel.Handlers
 
         public void Handle(CategoryActivated message)
         {
-        }
+            IList<ProductDto> products = _productRepository
+                                            .SearchFor(p => p.CategoryId == message.Id)
+                                            .ToList();
 
-        public void Handle(CategoryDeactivated message)
-        {
+            foreach (var prod in products)
+            {
+                _commandSender.Send<ActivateCategoryOnProduct>(new ActivateCategoryOnProduct(prod.Id, message.Id));
+            }
         }
     }
 }

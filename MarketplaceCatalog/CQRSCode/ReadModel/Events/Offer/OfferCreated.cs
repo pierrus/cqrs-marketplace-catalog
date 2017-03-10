@@ -3,17 +3,17 @@ using CQRSlite.Events;
 
 namespace CQRSCode.ReadModel.Events
 {
-    public class OfferCreated : IEvent 
+    public class OfferCreated : IEvent
 	{
-        public readonly Guid OfferId;
-        public readonly Guid MerchantId;
-        public readonly Int16 Stock;
-        public readonly Decimal Price;
-        public readonly Boolean MerchantActivated;
-        public readonly String SKU;
-        public readonly String MerchantName;
-        public readonly Boolean IsActivated;
-        public readonly Boolean IsVisible;
+        public Guid OfferId { get; set; }
+        public Guid MerchantId { get; set; }
+        public Int16 Stock { get; set; }
+        public Decimal Price { get; set; }
+        public Boolean MerchantActivated { get; set; }
+        public String SKU { get; set; }
+        public String MerchantName { get; set; }
+        public Boolean IsActivated { get; set; }
+        public Boolean IsVisible { get; set; }
         
         
         public OfferCreated(Guid id, Guid offerId, Guid merchantId, Int16 stock, Decimal price,

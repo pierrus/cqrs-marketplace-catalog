@@ -5,8 +5,8 @@ namespace CQRSCode.ReadModel.Events
 {
     public class OfferMerchantDeactivated : IEvent 
 	{
-        public readonly Guid OfferId;
-        public readonly Guid MerchantId;
+        public Guid OfferId { get; set; }
+        public Guid MerchantId { get; set; }
         
         
         public OfferMerchantDeactivated(Guid id, Guid offerId, Guid merchantId) 

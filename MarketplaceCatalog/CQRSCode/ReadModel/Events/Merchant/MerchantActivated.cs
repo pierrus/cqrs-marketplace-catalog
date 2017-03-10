@@ -3,7 +3,7 @@ using CQRSlite.Events;
 
 namespace CQRSCode.ReadModel.Events
 {
-    public class MerchantActivated : IEvent 
+    public class MerchantActivated : IEvent
 	{
         public MerchantActivated(Guid id) 
         {

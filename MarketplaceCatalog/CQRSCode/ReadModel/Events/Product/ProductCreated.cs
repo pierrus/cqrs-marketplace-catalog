@@ -5,12 +5,12 @@ namespace CQRSCode.ReadModel.Events
 {
     public class ProductCreated : IEvent 
 	{
-        public readonly string Name;
-        public readonly string Description;
-        public readonly string EAN;
-        public readonly string UPC;
-        public readonly Boolean IsActivated;
-        public readonly Boolean IsVisible;
+        public string Name { get; set; }
+        public string Description { get; set; }
+        public string EAN { get; set; }
+        public string UPC { get; set; }
+        public Boolean IsActivated { get; set; }
+        public Boolean IsVisible { get; set; }
         public ProductCreated(Guid id, string name, String description, Boolean isActivated,
                                 Boolean isVisible, String ean = null, String upc = null) 
         {

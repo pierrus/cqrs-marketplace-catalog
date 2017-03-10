@@ -5,8 +5,8 @@ namespace CQRSCode.ReadModel.Events
 {
     public class MerchantCreated : IEvent 
 	{
-        public readonly string Name;
-        public readonly string Email;
+        public string Name { get; set; }
+        public string Email { get; set; }
         public MerchantCreated(Guid id, string name, String email) 
         {
             Id = id;

@@ -5,9 +5,9 @@ namespace CQRSCode.ReadModel.Events
 {
     public class CategoryCreated : IEvent 
 	{
-        public readonly String Name;
-        public readonly Guid? ParentId;
-        public readonly Boolean Activated;
+        public String Name { get; set; }
+        public Guid? ParentId { get; set; }
+        public Boolean Activated { get; set; }
                 
         public CategoryCreated(Guid id, String name, Boolean activated, Guid? parentId = null) 
         {

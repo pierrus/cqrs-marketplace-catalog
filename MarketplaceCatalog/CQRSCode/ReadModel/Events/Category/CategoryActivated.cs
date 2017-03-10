@@ -3,7 +3,7 @@ using CQRSlite.Events;
 
 namespace CQRSCode.ReadModel.Events
 {
-    public class CategoryActivated : IEvent 
+    public class CategoryActivated : IEvent
 	{                
         public CategoryActivated(Guid id) 
         {

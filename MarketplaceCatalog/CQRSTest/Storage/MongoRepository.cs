@@ -72,10 +72,10 @@ namespace CQRSTests.Storage
       Guid categoryId = Guid.NewGuid();
       Guid offerId = Guid.NewGuid();
 
-      productRepository.Insert(new ProductSummaryDto { Id = Guid.NewGuid(), CategoryId = categoryId, Name = "myproduct", Description = "my nice product", MinPrice = 456, MaxPrice = 567 });
-      productRepository.Insert(new ProductSummaryDto { Id = Guid.NewGuid(), CategoryId = categoryId, Name = "myproduct", Description = "my nice product", MinPrice = 456, MaxPrice = 567 });
-      productRepository.Insert(new ProductSummaryDto { Id = Guid.NewGuid(), CategoryId = categoryId, Name = "myproduct", Description = "my nice product", MinPrice = 456, MaxPrice = 567 });
-      productRepository.Insert(new ProductSummaryDto { Id = Guid.NewGuid(), CategoryId = categoryId, Name = "myproduct", Description = "my nice product", MinPrice = 456, MaxPrice = 567 });
+      productRepository.Insert(new ProductSummaryDto { Id = Guid.NewGuid(), CategoryId = categoryId, Name = "myproduct", Description = "my nice product", Prices = new List<decimal>() { 1, 2, 3 } });
+      productRepository.Insert(new ProductSummaryDto { Id = Guid.NewGuid(), CategoryId = categoryId, Name = "myproduct", Description = "my nice product", Prices = new List<decimal>() { 1, 2, 3 } });
+      productRepository.Insert(new ProductSummaryDto { Id = Guid.NewGuid(), CategoryId = categoryId, Name = "myproduct", Description = "my nice product", Prices = new List<decimal>() { 1, 2, 3 } });
+      productRepository.Insert(new ProductSummaryDto { Id = Guid.NewGuid(), CategoryId = categoryId, Name = "myproduct", Description = "my nice product", Prices = new List<decimal>() { 1, 2, 3 } });
 
       IList<ProductSummaryDto> products = productRepository.SearchFor(prod => prod.CategoryId == categoryId);
 
