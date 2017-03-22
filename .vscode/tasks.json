@@ -1,0 +1,26 @@
+{
+    // See https://go.microsoft.com/fwlink/?LinkId=733558
+    // for the documentation about the tasks.json format
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "taskName": "build",
+            "args": [
+                "${workspaceRoot}/MarketplaceCatalog/CQRSTest/project.json"
+            ],
+            "isBuildCommand": true,
+            "problemMatcher": "$msCompile"
+        },
+        {
+            "taskName": "test",
+            "args": [ ],
+            "isTestCommand": true,
+            "showOutput": "always",
+            "problemMatcher": "$msCompile",
+            "key": "ctrl+t",
+            "isBackground": true,
+            "suppressTaskName": true,
+            "echoCommand": true
+        }
+    ]
+}

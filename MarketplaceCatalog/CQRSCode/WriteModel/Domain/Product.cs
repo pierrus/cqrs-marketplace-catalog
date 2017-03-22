@@ -70,7 +70,7 @@ namespace CQRSCode.WriteModel.Domain
 
         private void Apply(OfferDisplayed e)
         {
-            var offer = this.Offers.Where(o => o.Id == e.Id).FirstOrDefault();
+            var offer = this.Offers.Where(o => o.Id == e.OfferId).FirstOrDefault();
             offer.Visible = true;
         }
 
@@ -94,7 +94,6 @@ namespace CQRSCode.WriteModel.Domain
 
             if (Visible)
             {
-                ApplyChange(new ProductCategoryDefined(Id, CategoryId.Value));
                 ApplyChange(new ProductPublishedToCategory(this.Id, CategoryId.Value, Visible,
                                                             Name, Description,
                                                             Offers.Count(o => o.Visible),

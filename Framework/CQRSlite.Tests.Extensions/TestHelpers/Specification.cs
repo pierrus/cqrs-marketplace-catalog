@@ -109,7 +109,7 @@ namespace CQRSlite.Tests.Extensions.TestHelpers
 
         public IEnumerable<IEvent> Get<T>(Guid aggregateId, int fromVersion)
         {
-            return Events.Where(x => x.Version > fromVersion);
+            return Events.Where(x => x.Version > fromVersion && x.Id == aggregateId);
         }
     }
 }

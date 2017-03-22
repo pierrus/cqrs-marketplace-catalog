@@ -2,51 +2,27 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": ".NET Core Launch (console)",
+            "name": ".NET Core Test",
             "type": "coreclr",
             "request": "launch",
-            "preLaunchTask": "build",
-            "program": "${workspaceRoot}/bin/Debug/<target-framework>/<project-name.dll>",
-            "args": [],
-            "cwd": "${workspaceRoot}",
+            "program": "/usr/local/share/dotnet/dotnet",
+            "cwd": "${workspaceRoot}/MarketplaceCatalog/CQRSTest",
             "stopAtEntry": false,
-            "externalConsole": false
-        },
-        {
-            "name": ".NET Core Launch (web)",
-            "type": "coreclr",
-            "request": "launch",
+            "console": "internalConsole",
             "preLaunchTask": "build",
-            "program": "${workspaceRoot}/bin/Debug/<target-framework>/<project-name.dll>",
-            "args": [],
-            "cwd": "${workspaceRoot}",
-            "stopAtEntry": false,
-            "launchBrowser": {
-                "enabled": true,
-                "args": "${auto-detect-url}",
-                "windows": {
-                    "command": "cmd.exe",
-                    "args": "/C start ${auto-detect-url}"
-                },
-                "osx": {
-                    "command": "open"
-                },
-                "linux": {
-                    "command": "xdg-open"
-                }
-            },
-            "env": {
-                "ASPNETCORE_ENVIRONMENT": "Development"
-            },
-            "sourceFileMap": {
-                "/Views": "${workspaceRoot}/Views"
-            }
-        },
-        {
-            "name": ".NET Core Attach",
-            "type": "coreclr",
-            "request": "attach",
-            "processId": "${command.pickProcess}"
+            "args": [
+                "exec",
+                "--runtimeconfig",
+                "${workspaceRoot}/MarketplaceCatalog/CQRSTest/bin/Debug/netcoreapp1.1/CQRSTest.runtimeconfig.json",
+                "--depsfile",
+                "${workspaceRoot}/MarketplaceCatalog/CQRSTest/bin/Debug/netcoreapp1.1/CQRSTest.deps.json",
+                "--additionalprobingpath",
+                "/Users/pierre/.nuget/packages",
+                "/Users/pierre/.nuget/packages/dotnet-test-xunit/1.0.0-rc2-build10025/lib/netcoreapp1.0/dotnet-test-xunit.dll",
+                "${workspaceRoot}/MarketplaceCatalog/CQRSTest/bin/Debug/netcoreapp1.1/CQRSTest.dll",
+                "-namespace",
+                "CQRSTests"
+            ]
         }
     ]
 }

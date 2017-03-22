@@ -29,7 +29,7 @@ namespace CQRSCode.WriteModel.Domain
             MerchantId = merchantId;
             Activated = activated;
             Stock = stock;
-            MerchantActivated = MerchantActivated;
+            MerchantActivated = merchantActivated;
             Price = price;
         }
 
