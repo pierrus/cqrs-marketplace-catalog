@@ -6,6 +6,7 @@ using MongoDB.Bson.Serialization;
 using MongoDB.Driver;
 using CQRSCode.ReadModel.Events;
 using System.Reflection;
+using Microsoft.Extensions.Options;
 
 namespace CQRSCode.WriteModel.EventStore.Mongo
 {
@@ -17,7 +18,7 @@ namespace CQRSCode.WriteModel.EventStore.Mongo
         private readonly IMongoCollection<IEvent> _collection;
         
 
-        public EventStore(IEventPublisher publisher, String connectionString, String databaseName, IList<Type> events)
+        public EventStore(IEventPublisher publisher, CQRSCode.ReadModel.Repository.MongoOptions mongoOptions, IList<Type> events)
         {
             _publisher = publisher;
 
@@ -48,8 +49,8 @@ namespace CQRSCode.WriteModel.EventStore.Mongo
                 }
             }
 
-            _client = new MongoClient(connectionString);
-            _database = _client.GetDatabase(databaseName);
+            _client = new MongoClient(mongoOptions.ConnectionString);
+            _database = _client.GetDatabase(mongoOptions.Database);
             _collection = _database.GetCollection<IEvent>("events");
         }
 

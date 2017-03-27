@@ -2,6 +2,7 @@
     "version": "0.2.0",
     "configurations": [
         {
+            /* Cannot use dotnet test, as it implicitely starts a new process which we cannot attach to */
             "name": ".NET Core Test",
             "type": "coreclr",
             "request": "launch",
@@ -23,6 +24,42 @@
                 "-namespace",
                 "CQRSTests"
             ]
+        },
+        {
+            "name": ".NET Core Launch (web)",
+            "type": "coreclr",
+            "request": "launch",
+            "preLaunchTask": "build",
+            "program": "${workspaceRoot}/MarketplaceCatalog/CQRSWeb/bin/debug/netcoreapp1.0/CQRSWeb.dll",
+            "args": [],
+            "cwd": "${workspaceRoot}",
+            "stopAtEntry": false,
+            "launchBrowser": {
+                "enabled": true,
+                "args": "${auto-detect-url}",
+                "windows": {
+                    "command": "cmd.exe",
+                    "args": "/C start ${auto-detect-url}"
+                },
+                "osx": {
+                    "command": "open"
+                },
+                "linux": {
+                    "command": "xdg-open"
+                }
+            },
+            "env": {
+                "ASPNETCORE_ENVIRONMENT": "Development"
+            },
+            "sourceFileMap": {
+                "/Views": "${workspaceRoot}/Views"
+            }
+        },
+        {
+            "name": ".NET Core Attach",
+            "type": "coreclr",
+            "request": "attach",
+            "processId": "${command.pickProcess}"
         }
     ]
 }

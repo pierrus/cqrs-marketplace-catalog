@@ -36,7 +36,7 @@ namespace CQRSCode.ReadModel.Dtos
         {
             Id = id;
             CategoryId = categoryId;
-            name = Name;
+            Name = name;
             Description = description;
             IsActivated = isActivated;
             IsVisible = isVisible;

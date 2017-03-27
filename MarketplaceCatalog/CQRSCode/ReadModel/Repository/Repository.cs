@@ -1,9 +1,12 @@
 using System;
 using MongoDB.Bson.Serialization;
 using MongoDB.Driver;
+using MongoDB.Bson;
 using System.Collections.Generic;
 using System.Linq.Expressions;
 using System.Linq;
+using Microsoft.Extensions.Options;
+
 
 /// <summary>
 /// A generic MongoDB repository. Maps to a collection with the same name
@@ -22,10 +25,10 @@ namespace CQRSCode.ReadModel.Repository
         private String _databaseName;
         protected Func<TEntity, IMongoCollection<TEntity>> _collectionGetter = null;
 
-        public Repository(String connectionString, String databaseName)
+        public Repository(MongoOptions mongoOptions)
         {
-            _databaseName = databaseName;
-            _connectionString = connectionString;
+            _databaseName = mongoOptions.Database;
+            _connectionString = mongoOptions.ConnectionString;
 
             var client = new MongoClient(_connectionString);
             _database = client.GetDatabase(_databaseName);
@@ -53,18 +56,25 @@ namespace CQRSCode.ReadModel.Repository
             _collection.DeleteOne(Builders<TEntity>.Filter.Eq("_id", entity.Id));
         }
 
-        public IList<TEntity> SearchFor(Expression<Func<TEntity, bool>> predicate)
+        public IList<TEntity> SearchFor(Expression<Func<TEntity, bool>> predicate, Int32? startIndex = null, Int32? limit = null)
         {
-            // var collection = GetCollection(predicate.;
+            var findQuery = _collection.Find(predicate).Skip(startIndex).Limit(limit);
 
-            return _collection.Find(predicate).ToList();
+            return findQuery.ToList();
+        }
+
+        public long Count(Expression<Func<TEntity, bool>> predicate)
+        {
+            var findQuery = _collection.Find(predicate);
+
+            return findQuery.Count();
         }
 
         public TEntity GetById(Guid id)
         {
             // var collection = GetCollection(entity);
 
-            return _collection.Find(e => e.Id == id).FirstOrDefault();
+            return _collection.Find(Builders<TEntity>.Filter.Eq("_id", id)).FirstOrDefault();
         }
 
         private IMongoCollection<TEntity> GetCollection (TEntity entity)

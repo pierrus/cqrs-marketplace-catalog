@@ -19,7 +19,7 @@ namespace CQRSTests.Storage
     public MongoEventStore()
     {
       this._publisherMock = new Mock<IEventPublisher>();
-      this._eStore = new CQRSCode.WriteModel.EventStore.Mongo.EventStore(this._publisherMock.Object, "mongodb://localhost:27017", "marketplacecatalog", new List<Type>() { typeof(OfferCreated), typeof(ProductCreated), typeof(OfferStockSet) });
+      this._eStore = new CQRSCode.WriteModel.EventStore.Mongo.EventStore(this._publisherMock.Object, new CQRSCode.ReadModel.Repository.MongoOptions { ConnectionString = "mongodb://localhost:27017", Database = "marketplacecatalog" }, new List<Type>() { typeof(OfferCreated), typeof(ProductCreated), typeof(OfferStockSet) });
     }
 
     [Fact]

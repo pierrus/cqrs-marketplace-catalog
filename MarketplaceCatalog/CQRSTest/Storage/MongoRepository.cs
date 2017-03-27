@@ -15,7 +15,7 @@ namespace CQRSTests.Storage
     [Fact]
     public void SingleProduct()
     {
-      Repository<ProductDto> productRepository = new Repository<ProductDto>("mongodb://localhost:27017", "marketplacecatalog");
+      Repository<ProductDto> productRepository = new Repository<ProductDto>(new CQRSCode.ReadModel.Repository.MongoOptions { ConnectionString = "mongodb://localhost:27017", Database = "marketplacecatalog" });
 
       Guid productId = Guid.NewGuid();
       Guid categoryId = Guid.NewGuid();
@@ -38,7 +38,7 @@ namespace CQRSTests.Storage
     [Fact]
     public void ProductAdvancedCriterias()
     {
-      Repository<ProductDto> productRepository = new Repository<ProductDto>("mongodb://localhost:27017", "marketplacecatalog");
+      Repository<ProductDto> productRepository = new Repository<ProductDto>(new CQRSCode.ReadModel.Repository.MongoOptions { ConnectionString = "mongodb://localhost:27017", Database = "marketplacecatalog" });
 
       Guid productId = Guid.NewGuid();
       Guid categoryId = Guid.NewGuid();
@@ -66,7 +66,7 @@ namespace CQRSTests.Storage
     [Fact]
     public void ProductSummaryAdvancedCriterias()
     {
-      Repository<ProductSummaryDto> productRepository = new Repository<ProductSummaryDto>("mongodb://localhost:27017", "marketplacecatalog");
+      Repository<ProductSummaryDto> productRepository = new Repository<ProductSummaryDto>(new CQRSCode.ReadModel.Repository.MongoOptions { ConnectionString = "mongodb://localhost:27017", Database = "marketplacecatalog" });
 
       Guid productId = Guid.NewGuid();
       Guid categoryId = Guid.NewGuid();

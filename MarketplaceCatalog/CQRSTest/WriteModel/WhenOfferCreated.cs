@@ -16,6 +16,7 @@ namespace CQRSTests.WriteModel
         private Guid _id;
         private Guid _merchantId;
         private Guid _productId;
+        
         protected override ProductCommandHandlers BuildHandler()
         {
             return new ProductCommandHandlers(Session);
@@ -40,16 +41,19 @@ namespace CQRSTests.WriteModel
         }
 
         [Then]
-        public void Should_create_two_events()
+        public void Should_create_four_events()
         {
             //OfferCreated + ProductDisplayed
             Assert.Equal(4, PublishedEvents.Count);
         }
 
         [Then]
-        public void Should_create_correct_event()
+        public void Should_create_correct_events()
         {
             Assert.IsType<OfferCreated>(PublishedEvents.First());
+            Assert.IsType<ProductDisplayed>(PublishedEvents[1]);
+            Assert.IsType<OfferDisplayed>(PublishedEvents[2]);
+            Assert.IsType<OfferPublishedToMerchant>(PublishedEvents.Last());
         }
 
         [Then]

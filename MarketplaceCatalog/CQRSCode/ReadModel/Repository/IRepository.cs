@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq.Expressions;
+using System.Linq;
 
 namespace CQRSCode.ReadModel.Repository
 {
@@ -9,7 +10,8 @@ namespace CQRSCode.ReadModel.Repository
         void Insert(TEntity entity);
         void Update(TEntity entity);
         void Delete(TEntity entity);
-        IList<TEntity> SearchFor(Expression<Func<TEntity, bool>> predicate);
+        IList<TEntity> SearchFor(Expression<Func<TEntity, bool>> predicate, Int32? startIndex = null, Int32? limit = null);
+        long Count(Expression<Func<TEntity, bool>> predicate);
         TEntity GetById(Guid id);
     }
 }
