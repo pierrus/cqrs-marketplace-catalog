@@ -40,7 +40,7 @@ namespace CQRSCode.ReadModel.Handlers
             foreach (var prod in products)
             {
                 var offer = prod.Offers.Where(o => o.MerchantId == message.Id).FirstOrDefault();
-                _commandSender.Send(new DeactivateMerchantOnOffer(offer.Id, prod.Id, message.Id));
+                _commandSender.Send(new DeactivateMerchantOnOffer(offer.Id, prod.Id, message.Id, offer.Version));
             }
         }
     }

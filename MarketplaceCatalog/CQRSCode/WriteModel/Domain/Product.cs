@@ -48,13 +48,13 @@ namespace CQRSCode.WriteModel.Domain
 
         private void Apply(OfferMerchantDeactivated e)
         {
-            var offer = this.Offers.Where(o => o.Id == e.Id).FirstOrDefault();
+            var offer = this.Offers.Where(o => o.Id == e.OfferId).FirstOrDefault();
             offer.MerchantActivated = false;
         }
 
         private void Apply(OfferMerchantActivated e)
         {
-            var offer = this.Offers.Where(o => o.Id == e.Id).FirstOrDefault();
+            var offer = this.Offers.Where(o => o.Id == e.OfferId).FirstOrDefault();
             offer.MerchantActivated = true;
         }
 
@@ -76,7 +76,7 @@ namespace CQRSCode.WriteModel.Domain
 
         private void Apply(OfferHidden e)
         {
-            var offer = this.Offers.Where(o => o.Id == e.Id).FirstOrDefault();
+            var offer = this.Offers.Where(o => o.Id == e.OfferId).FirstOrDefault();
             offer.Visible = false;
         }
 
@@ -87,10 +87,10 @@ namespace CQRSCode.WriteModel.Domain
         {
             if (CategoryId == categoryId) throw new InvalidOperationException("already in this category");
 
-            ApplyChange(new ProductCategoryDefined(this.Id, CategoryId.Value));
-
             if (CategoryId.HasValue)
-                ApplyChange(new ProductUnpublishedFromCategory(this.Id, CategoryId.Value));            
+                ApplyChange(new ProductUnpublishedFromCategory(this.Id, CategoryId.Value));
+
+            ApplyChange(new ProductCategoryDefined(this.Id, categoryId));            
 
             if (Visible)
             {

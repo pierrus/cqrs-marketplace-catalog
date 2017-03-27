@@ -5,13 +5,13 @@ namespace CQRSCode.WriteModel.Commands
 {
     public class SetProductCategory : ICommand 
 	{
-        public readonly Guid ProductId;
         public readonly Guid CategoryId;
 
-        public SetProductCategory(Guid productId, Guid categoryId) 
+        public SetProductCategory(Guid productId, Guid categoryId, int expectedVersion) 
 		{
-            ProductId = productId;
+            Id = productId;
             CategoryId = categoryId;
+            ExpectedVersion = expectedVersion;
         }
 
         public Guid Id { get; set; }

@@ -92,8 +92,9 @@ namespace CQRSWeb
             var serviceProvider = services.BuildServiceProvider();
             var registrar = new BusRegistrar(new DependencyResolver(serviceProvider));
             registrar.Register(typeof(CategoryCommandHandlers));
-            registrar.Register(typeof(MerchantCommandHandlers));
-            registrar.Register(typeof(ProductCommandHandlers));
+            // USELESS --> toute l'assembly est inspectée à partir du type passé en paramètre
+            // registrar.Register(typeof(MerchantCommandHandlers));
+            // registrar.Register(typeof(ProductCommandHandlers));
 
             // Add framework services.
             services.AddMvc();

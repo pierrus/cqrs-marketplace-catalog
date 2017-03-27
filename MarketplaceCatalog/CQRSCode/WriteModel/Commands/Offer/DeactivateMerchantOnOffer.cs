@@ -9,11 +9,12 @@ namespace CQRSCode.WriteModel.Commands
 
         public Guid MerchantId { get; set; }
 
-        public DeactivateMerchantOnOffer(Guid id, Guid productId, Guid merchantId) 
+        public DeactivateMerchantOnOffer(Guid id, Guid productId, Guid merchantId, int expectedVersion) 
 		{
             Id = id;
             ProductId = productId;
             MerchantId = merchantId;
+            ExpectedVersion = expectedVersion;
         }
 
         public Guid Id { get; set; }
