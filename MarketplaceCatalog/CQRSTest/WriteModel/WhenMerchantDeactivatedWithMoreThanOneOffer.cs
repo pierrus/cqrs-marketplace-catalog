@@ -58,7 +58,7 @@ namespace CQRSTests.WriteModel
         [Then]
         public void Should_create_three_events()
         {
-            //OfferMerchantDeactivated + OfferUnpublishedFromMerchant
+            //OfferMerchantDeactivated + OfferMerchantDeactivated + OfferMerchantDeactivated
             Assert.Equal(3, PublishedEvents.Count);
         }
 
