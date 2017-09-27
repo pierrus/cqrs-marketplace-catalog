@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using CQRSCode.WriteModel.Commands;
 using CQRSCode.WriteModel.Domain;
 using CQRSlite.Commands;
@@ -22,66 +23,66 @@ namespace CQRSCode.WriteModel.Handlers
             _session = session;
         }
 
-        public void Handle(CreateProduct message)
+        public async Task Handle(CreateProduct message)
         {
             var product = new Product(message.Id, message.Name, message.Description, true, false, message.EAN, message.UPC);
-            _session.Add(product);
-            _session.Commit();
+            await _session.Add(product);
+            await _session.Commit();
         }
 
         //Loads 2 aggregate roots, but commit only one
-        public void Handle(CreateOffer message)
+        public async Task Handle(CreateOffer message)
         {
-            var product = _session.Get<Product>(message.ProductId);
-            var merchant = _session.Get<Merchant>(message.MerchantId);
+            var product = await _session.Get<Product>(message.ProductId);
+            var merchant = await _session.Get<Merchant>(message.MerchantId);
 
             product.CreateOffer(message.Id, message.ProductId, message.Stock, message.Price, merchant.Activated, merchant.Name, message.SKU);
 
-            _session.Commit();
+            await _session.Commit();
         }
 
-        public void Handle(SetProductCategory message)
+        public async Task Handle(SetProductCategory message)
         {
-            var product = _session.Get<Product>(message.Id, message.ExpectedVersion);
+            var product = await _session.Get<Product>(message.Id, message.ExpectedVersion);
             product.SetCategory(message.CategoryId);
 
-            _session.Commit();
+            await _session.Commit();
         }
 
-        public void Handle(SetStock message)
+        public async Task Handle(SetStock message)
         {
-            var product = _session.Get<Product>(message.ProductId, message.ExpectedVersion);
+            var product = await _session.Get<Product>(message.ProductId, message.ExpectedVersion);
             product.SetStock(message.Id, message.Stock);
 
-            _session.Commit();
+            await _session.Commit();
         }
 
-        public void Handle(DeactivateMerchantOnOffer message)
+        public async Task Handle(DeactivateMerchantOnOffer message)
         {
-            var product = _session.Get<Product>(message.ProductId, message.ExpectedVersion);
+            var product = await _session.Get<Product>(message.ProductId, message.ExpectedVersion);
             product.DeactivateMerchant(message.Id, message.MerchantId);
 
-            _session.Commit();
+            await _session.Commit();
         }
 
-        public void Handle(ActivateMerchantOnOffer message)
+        public async Task Handle(ActivateMerchantOnOffer message)
         {
-            var product = _session.Get<Product>(message.ProductId, message.ExpectedVersion);
+            var product = await _session.Get<Product>(message.ProductId, message.ExpectedVersion);
             product.ActivateMerchant(message.Id, message.MerchantId);
 
-            _session.Commit();
+            await _session.Commit();
         }
 
-        public void Handle(ActivateCategoryOnProduct message)
+        public async Task Handle(ActivateCategoryOnProduct message)
         {
-            var product = _session.Get<Product>(message.Id);
+            var product = await _session.Get<Product>(message.Id);
 
             if (product.CategoryId == null)
                 return;
 
             product.ActivateCategory();
 
-            _session.Commit();
+            await _session.Commit();
         }
     }
 }

@@ -11,15 +11,18 @@
     Description: @Model.Description<br />
 </p>
 
-<h2>@Model.Offers.Count() Offer(s)</h2>
-@foreach (var offer in Model.Offers)
+<h2>@Model.Offers?.Count() Offer(s)</h2>
+@if (Model.Offers != null)
 {
-    <p>
-        Id: @offer.Id<br />
-        Merchant: @offer.MerchantName<br />
-        Stock: @offer.Stock<br />
-        Price: @offer.Price
-    </p>
+    foreach (var offer in Model.Offers)
+    {
+        <p>
+            Id: @offer.Id<br />
+            Merchant: @offer.MerchantName<br />
+            Stock: @offer.Stock<br />
+            Price: @offer.Price
+        </p>
+    }
 }
 
 

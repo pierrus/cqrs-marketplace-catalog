@@ -19,11 +19,11 @@ namespace CQRSTests.Storage
     public MongoEventStore()
     {
       this._publisherMock = new Mock<IEventPublisher>();
-      this._eStore = new CQRSCode.WriteModel.EventStore.Mongo.EventStore(this._publisherMock.Object, new CQRSCode.ReadModel.Repository.MongoOptions { ConnectionString = "mongodb://localhost:27017", Database = "marketplacecatalog" }, new List<Type>() { typeof(OfferCreated), typeof(ProductCreated), typeof(OfferStockSet) });
+      this._eStore = new CQRSCode.WriteModel.EventStore.Mongo.EventStore(this._publisherMock.Object, new CQRSCode.ReadModel.Repository.MongoOptions { ConnectionString = "mongodb://localhost:27017", Database = "marketplacecatalog" }, new List<EventType>() { new EventType(typeof(OfferCreated)), new EventType(typeof(ProductCreated)), new EventType(typeof(OfferStockSet)) });
     }
 
     [Fact]
-    public void InsertEvents()
+    public async void InsertEvents()
     {
       List<IEvent> ieventList = new List<IEvent>();
       OfferCreated offerCreated = new OfferCreated(Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid(), (short) 1, Decimal.One, true, "mysku", "mymerchant", true, true);
@@ -31,11 +31,11 @@ namespace CQRSTests.Storage
 
       offerCreated.Version = 1;
       ieventList.Add((IEvent) offerCreated);
-      this._eStore.Save<Offer>((IEnumerable<IEvent>) ieventList);
+      await this._eStore.Save((IEnumerable<IEvent>) ieventList);
     }
 
     [Fact]
-    public void ReadEventsByAggregate()
+    public async void ReadEventsByAggregate()
     {
       Guid guid1 = Guid.NewGuid();
       Guid guid2 = Guid.NewGuid();
@@ -63,15 +63,15 @@ namespace CQRSTests.Storage
       offerStockSet.Version = num3;
       ieventList.Add((IEvent) offerStockSet);
       
-      this._eStore.Save<Product>((IEnumerable<IEvent>) ieventList);
-      IEnumerable<IEvent> source = this._eStore.Get<Product>(guid1, -1);
+      await this._eStore.Save((IEnumerable<IEvent>) ieventList);
+      IEnumerable<IEvent> source = await this._eStore.Get(guid1, -1);
       
       Assert.NotNull((object) source);
       Assert.Equal(3, source.Count<IEvent>());
     }
 
     [Fact]
-    public void LoadAggregateEventsHistory()
+    public async void LoadAggregateEventsHistory()
     {
       Guid guid1 = Guid.NewGuid();
       Guid guid2 = Guid.NewGuid();
@@ -105,9 +105,9 @@ namespace CQRSTests.Storage
       offerStockSet2.Version = num4;
 
       ieventList1.Add((IEvent) offerStockSet2);
-      this._eStore.Save<Product>((IEnumerable<IEvent>) ieventList1);
+      await this._eStore.Save((IEnumerable<IEvent>) ieventList1);
       
-      IEnumerable<IEvent> ievents1 = this._eStore.Get<Product>(guid1, -1);
+      IEnumerable<IEvent> ievents1 = await this._eStore.Get(guid1, -1);
       Product instance1 = (Product) Activator.CreateInstance(typeof (Product), true);
       
       ((AggregateRoot) instance1).LoadFromHistory(ievents1);
@@ -128,9 +128,9 @@ namespace CQRSTests.Storage
       offerCreated2.Version = num5;
 
       ieventList2.Add((IEvent) offerCreated2);
-      eStore.Save<Product>((IEnumerable<IEvent>) ieventList2);
+      await eStore.Save((IEnumerable<IEvent>) ieventList2);
       
-      IEnumerable<IEvent> ievents2 = this._eStore.Get<Product>(guid1, -1);
+      IEnumerable<IEvent> ievents2 = await this._eStore.Get(guid1, -1);
       
       Product instance2 = (Product) Activator.CreateInstance(typeof (Product), true);
       ((AggregateRoot) instance2).LoadFromHistory(ievents2);

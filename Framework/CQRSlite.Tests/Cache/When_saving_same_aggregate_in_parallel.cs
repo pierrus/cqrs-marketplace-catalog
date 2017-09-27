@@ -17,46 +17,43 @@ namespace CQRSlite.Tests.Cache
 
         public When_saving_same_aggregate_in_parallel()
         {
-            var memoryCache = new MemoryCache();
+            var cache = new MemoryCache();
 
             _testStore = new TestInMemoryEventStore();
-            _rep1 = new CacheRepository(new Repository(_testStore), _testStore, memoryCache);
-            _rep2 = new CacheRepository(new Repository(_testStore), _testStore, memoryCache);
+            _rep1 = new CacheRepository(new Repository(_testStore), _testStore, cache);
+            _rep2 = new CacheRepository(new Repository(_testStore), _testStore, cache);
 
             _aggregate = new TestAggregate(Guid.NewGuid());
-            _rep1.Save(_aggregate);
+            _rep1.Save(_aggregate).Wait();
 
-            var t1 = new Task(() =>
+            var t1 = Task.Run(async () =>
             {
                 for (var i = 0; i < 100; i++)
                 {
-                    var aggregate = _rep1.Get<TestAggregate>(_aggregate.Id);
+                    var aggregate = await _rep1.Get<TestAggregate>(_aggregate.Id);
                     aggregate.DoSomething();
-                    _rep1.Save(aggregate);
+                    await _rep1.Save(aggregate);
                 }
             });
 
-            var t2 = new Task(() =>
+            var t2 = Task.Run(async () =>
             {
                 for (var i = 0; i < 100; i++)
                 {
-                    var aggregate = _rep2.Get<TestAggregate>(_aggregate.Id);
+                    var aggregate = await _rep2.Get<TestAggregate>(_aggregate.Id);
                     aggregate.DoSomething();
-                    _rep2.Save(aggregate);
+                    await _rep2.Save(aggregate);
                 }
             });
-            var t3 = new Task(() =>
+            var t3 = Task.Run(async () =>
             {
                 for (var i = 0; i < 100; i++)
                 {
-                    var aggregate = _rep2.Get<TestAggregate>(_aggregate.Id);
+                    var aggregate = await _rep2.Get<TestAggregate>(_aggregate.Id);
                     aggregate.DoSomething();
-                    _rep2.Save(aggregate);
+                    await _rep2.Save(aggregate);
                 }
             });
-            t1.Start();
-            t2.Start();
-            t3.Start();
 
             Task.WaitAll(t1, t2, t3);
         }

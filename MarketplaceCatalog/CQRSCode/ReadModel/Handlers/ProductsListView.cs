@@ -1,4 +1,5 @@
-﻿using CQRSCode.ReadModel.Dtos;
+﻿using System.Threading.Tasks;
+using CQRSCode.ReadModel.Dtos;
 using CQRSCode.ReadModel.Events;
 using CQRSCode.ReadModel.Repository;
 using CQRSlite.Events;
@@ -19,7 +20,7 @@ namespace CQRSCode.ReadModel.Handlers
             _productsRepository = productsRepository;
         }
 
-        public void Handle(ProductCategoryDefined message)
+        public async Task Handle(ProductCategoryDefined message)
         {
             var prod = _productsRepository
                         .SearchFor(p => p.Id == message.Id)
@@ -30,7 +31,7 @@ namespace CQRSCode.ReadModel.Handlers
             _productsRepository.Update(prod);
         }
 
-        public void Handle(ProductPublishedToCategory message)
+        public async Task Handle(ProductPublishedToCategory message)
         {
             var prod = new ProductSummaryDto();
 
@@ -39,7 +40,7 @@ namespace CQRSCode.ReadModel.Handlers
             _productsRepository.Insert(prod);
         }
 
-        public void Handle(ProductUnpublishedFromCategory message)
+        public async Task Handle(ProductUnpublishedFromCategory message)
         {
             var prod = _productsRepository
                         .SearchFor(p => p.Id == message.Id)
@@ -50,7 +51,7 @@ namespace CQRSCode.ReadModel.Handlers
 
         // This operation might take a long time
         // Better to just deactivate the products ? Think about it as a cache
-        public void Handle(CategoryDeactivated message)
+        public async Task Handle(CategoryDeactivated message)
         {
             var prods = _productsRepository
                         .SearchFor(p => p.Categories.Any(cId => cId == message.Id));

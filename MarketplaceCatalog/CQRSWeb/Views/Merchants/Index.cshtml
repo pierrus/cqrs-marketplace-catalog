@@ -1,0 +1,15 @@
+﻿@model IEnumerable<CQRSCode.ReadModel.Dtos.MerchantDto>
+@{
+    ViewData["Title"] = "Home Page";
+}
+
+<h2>All merchants:</h2>
+<ul>
+    @foreach (var mercDto in Model)
+{
+    <li>
+        @Html.ActionLink("Name: " + mercDto.Name + " (id: " + mercDto.Id + ")", "Details", new { Id = mercDto.Id })
+    </li>
+}
+</ul>
+@Html.ActionLink("Add", "Add")

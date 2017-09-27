@@ -1,0 +1,16 @@
+﻿@model CQRSWeb.Models.Merchant
+@{
+    ViewData["Title"] = "New Merchant";
+}
+
+<h2>Add a new Merchant</h2>
+@using (Html.BeginForm("Add"))
+{
+    <p>
+        Name: <input type="text" asp-for="Name" /><span asp-validation-for="Name"></span><br />
+        Email: <input type="text" asp-for="Email" /><span asp-validation-for="Email"></span><br />
+        Activated: <input type="checkbox" asp-for="IsActivated" /><span asp-validation-for="IsActivated"></span><br />
+    </p>
+
+    <input type="submit" />
+}

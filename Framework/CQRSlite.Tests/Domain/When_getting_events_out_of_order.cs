@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading.Tasks;
 using CQRSlite.Domain;
 using CQRSlite.Domain.Exception;
 using CQRSlite.Tests.Substitutes;
@@ -17,10 +18,10 @@ namespace CQRSlite.Tests.Domain
         }
 
         [Fact]
-        public void Should_throw_concurrency_exception()
+        public async Task Should_throw_concurrency_exception()
         {
             var id = Guid.NewGuid();
-            Assert.Throws<EventsOutOfOrderException>(() => _session.Get<TestAggregate>(id, 3));
+            await Assert.ThrowsAsync<EventsOutOfOrderException>(async () => await _session.Get<TestAggregate>(id, 3));
         }
     }
 }

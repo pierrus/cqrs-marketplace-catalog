@@ -9,7 +9,7 @@ Requires a running MongoDB instance (use docker for more simplicity)
 
 ## CQRSTest
 
-**Start mongo for tests purposes**
+**Start mongo**
 
 docker run --name mongo -d -p 27017:27017 mongo
 
@@ -17,7 +17,25 @@ docker run --name mongo -d -p 27017:27017 mongo
 
 docker run -it --link mongo:mongo --rm mongo sh -c 'exec mongo "$MONGO_PORT_27017_TCP_ADDR:$MONGO_PORT_27017_TCP_PORT/test"'
 
+show dbs
+use marketplacecatalog
+db.events.find()
+db.events.count()
+
+## Performance results
+
+TODO
+
 ## Notes
 
-Bloqué sur l'insertion de Events dans MongoDB
-Je souhaite manipuler une Collection<IEvent>, sans succès
+Suite à la migration vers csproj, le Framework compile (avec dotnet build --framework netstandard1.5)
+CQRSCode compile également
+Reste Test et Web
+
+Faire un schéma de l'architecture
+
+Ajout d'un produit via le web
+Ajouter bootstrap
+
+J'ai corrigé le bug de scan des IEvent, je ne parviens toujojurs pas à push une command dans le contexte de l'app web
+Il y'a en fait un crash à l'instantiation du Mongo EventStore System.InvalidOperationException: Unable to resolve service for type 'System.Collections.Generic.IList`1[System.Type]' while attempting to activate 'CQRSCode.WriteModel.EventStore.Mongo.EventStore'

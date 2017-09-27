@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Threading;
+using System.Threading.Tasks;
 using CQRSlite.Snapshots;
 
 namespace CQRSlite.Tests.Substitutes
@@ -9,16 +11,17 @@ namespace CQRSlite.Tests.Substitutes
         public bool VerifySave { get; private set; }
         public int SavedVersion { get; private set; }
 
-        public Snapshot Get(Guid id)
+        public Task<Snapshot> Get(Guid id, CancellationToken cancellationToken = default(CancellationToken))
         {
             VerifyGet = true;
-            return new TestSnapshotAggregateSnapshot();
+            return Task.FromResult((Snapshot)new TestSnapshotAggregateSnapshot());
         }
 
-        public void Save(Snapshot snapshot)
+        public Task Save(Snapshot snapshot, CancellationToken cancellationToken = default(CancellationToken))
         {
             VerifySave = true;
             SavedVersion = snapshot.Version;
+            return Task.CompletedTask;
         }
     }
 }

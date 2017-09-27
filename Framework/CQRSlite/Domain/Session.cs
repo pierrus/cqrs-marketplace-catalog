@@ -1,6 +1,9 @@
 ﻿using CQRSlite.Domain.Exception;
 using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace CQRSlite.Domain
 {
@@ -11,16 +14,11 @@ namespace CQRSlite.Domain
 
         public Session(IRepository repository)
         {
-            if (repository == null)
-            {
-                throw new ArgumentNullException(nameof(repository));
-            }
-
-            _repository = repository;
+            _repository = repository ?? throw new ArgumentNullException(nameof(repository));
             _trackedAggregates = new Dictionary<Guid, AggregateDescriptor>();
         }
 
-        public void Add<T>(T aggregate) where T : AggregateRoot
+        public Task Add<T>(T aggregate, CancellationToken cancellationToken = default(CancellationToken)) where T : AggregateRoot
         {
             if (!IsTracked(aggregate.Id))
             {
@@ -30,9 +28,10 @@ namespace CQRSlite.Domain
             {
                 throw new ConcurrencyException(aggregate.Id);
             }
+            return Task.FromResult(0);
         }
 
-        public T Get<T>(Guid id, int? expectedVersion = null) where T : AggregateRoot
+        public async Task<T> Get<T>(Guid id, int? expectedVersion = null, CancellationToken cancellationToken = default(CancellationToken)) where T : AggregateRoot
         {
             if (IsTracked(id))
             {
@@ -44,12 +43,12 @@ namespace CQRSlite.Domain
                 return trackedAggregate;
             }
 
-            var aggregate = _repository.Get<T>(id);
+            var aggregate = await _repository.Get<T>(id, cancellationToken);
             if (expectedVersion != null && aggregate.Version != expectedVersion)
             {
                 throw new ConcurrencyException(id);
             }
-            Add(aggregate);
+            await Add(aggregate, cancellationToken);
 
             return aggregate;
         }
@@ -59,12 +58,9 @@ namespace CQRSlite.Domain
             return _trackedAggregates.ContainsKey(id);
         }
 
-        public void Commit()
+        public async Task Commit(CancellationToken cancellationToken = default(CancellationToken))
         {
-            foreach (var descriptor in _trackedAggregates.Values)
-            {
-                _repository.Save(descriptor.Aggregate, descriptor.Version);
-            }
+            await Task.WhenAll(_trackedAggregates.Values.Select(x => _repository.Save(x.Aggregate, x.Version, cancellationToken)));
             _trackedAggregates.Clear();
         }
     }

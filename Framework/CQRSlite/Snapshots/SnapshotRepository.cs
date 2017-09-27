@@ -4,6 +4,8 @@ using CQRSlite.Events;
 using CQRSlite.Infrastructure;
 using System;
 using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace CQRSlite.Snapshots
 {
@@ -16,73 +18,51 @@ namespace CQRSlite.Snapshots
 
         public SnapshotRepository(ISnapshotStore snapshotStore, ISnapshotStrategy snapshotStrategy, IRepository repository, IEventStore eventStore)
         {
-            if (snapshotStore == null)
-            {
-                throw new ArgumentNullException(nameof(snapshotStore));
-            }
-            if (snapshotStrategy == null)
-            {
-                throw new ArgumentNullException(nameof(snapshotStrategy));
-            }
-            if (repository == null)
-            {
-                throw new ArgumentNullException(nameof(repository));
-            }
-            if (eventStore == null)
-            {
-                throw new ArgumentNullException(nameof(eventStore));
-            }
-
-            _snapshotStore = snapshotStore;
-            _snapshotStrategy = snapshotStrategy;
-            _repository = repository;
-            _eventStore = eventStore;
+            _snapshotStore = snapshotStore ?? throw new ArgumentNullException(nameof(snapshotStore));
+            _snapshotStrategy = snapshotStrategy ?? throw new ArgumentNullException(nameof(snapshotStrategy));
+            _repository = repository ?? throw new ArgumentNullException(nameof(repository));
+            _eventStore = eventStore ?? throw new ArgumentNullException(nameof(eventStore));
         }
 
-        public void Save<T>(T aggregate, int? exectedVersion = null) where T : AggregateRoot
+        public Task Save<T>(T aggregate, int? exectedVersion = null, CancellationToken cancellationToken = default(CancellationToken)) where T : AggregateRoot
         {
-            TryMakeSnapshot(aggregate);
-            _repository.Save(aggregate, exectedVersion);
+            return Task.WhenAll(TryMakeSnapshot(aggregate), _repository.Save(aggregate, exectedVersion, cancellationToken));
         }
 
-        public T Get<T>(Guid aggregateId) where T : AggregateRoot
+        public async Task<T> Get<T>(Guid aggregateId, CancellationToken cancellationToken = default(CancellationToken)) where T : AggregateRoot
         {
             var aggregate = AggregateFactory.CreateAggregate<T>();
-            var snapshotVersion = TryRestoreAggregateFromSnapshot(aggregateId, aggregate);
+            var snapshotVersion = await TryRestoreAggregateFromSnapshot(aggregateId, aggregate, cancellationToken);
             if (snapshotVersion == -1)
-            {
-                return _repository.Get<T>(aggregateId);
-            }
-            var events = _eventStore.Get<T>(aggregateId, snapshotVersion).Where(desc => desc.Version > snapshotVersion);
+                return await _repository.Get<T>(aggregateId, cancellationToken);
+
+            var events = (await _eventStore.Get(aggregateId, snapshotVersion, cancellationToken)).Where(desc => desc.Version > snapshotVersion);
             aggregate.LoadFromHistory(events);
 
             return aggregate;
         }
 
-        private int TryRestoreAggregateFromSnapshot<T>(Guid id, T aggregate)
+        private async Task<int> TryRestoreAggregateFromSnapshot<T>(Guid id, T aggregate, CancellationToken cancellationToken) where T : AggregateRoot
         {
             var version = -1;
-            if (_snapshotStrategy.IsSnapshotable(typeof(T)))
-            {
-                var snapshot = _snapshotStore.Get(id);
-                if (snapshot != null)
-                {
-                    aggregate.AsDynamic().Restore(snapshot);
-                    version = snapshot.Version;
-                }
-            }
+            if (!_snapshotStrategy.IsSnapshotable(typeof(T)))
+                return version;
+            var snapshot = await _snapshotStore.Get(id, cancellationToken);
+            if (snapshot == null)
+                return version;
+            aggregate.AsDynamic().Restore(snapshot);
+            version = snapshot.Version;
             return version;
         }
 
-        private void TryMakeSnapshot(AggregateRoot aggregate)
+        private Task TryMakeSnapshot(AggregateRoot aggregate)
         {
             if (!_snapshotStrategy.ShouldMakeSnapShot(aggregate))
-            {
-                return;
-            }
-            var snapshot = aggregate.AsDynamic().GetSnapshot().RealObject;
-            snapshot.Version = aggregate.Version + aggregate.GetUncommittedChanges().Count();
-            _snapshotStore.Save(snapshot);
+                return Task.FromResult(0);
+
+            var snapshot = aggregate.AsDynamic().GetSnapshot();
+            snapshot.Version = aggregate.Version + aggregate.GetUncommittedChanges().Length;
+            return _snapshotStore.Save(snapshot);
         }
     }
 }

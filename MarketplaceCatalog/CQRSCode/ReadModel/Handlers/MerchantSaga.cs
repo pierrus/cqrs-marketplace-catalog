@@ -1,4 +1,5 @@
-﻿using CQRSCode.ReadModel.Dtos;
+﻿using System.Threading.Tasks;
+using CQRSCode.ReadModel.Dtos;
 using CQRSCode.ReadModel.Events;
 using CQRSCode.ReadModel.Repository;
 using CQRSlite.Events;
@@ -22,25 +23,25 @@ namespace CQRSCode.ReadModel.Handlers
             _commandSender = commandSender;
         }
 
-        public void Handle(MerchantActivated message)
+        public async Task Handle(MerchantActivated message)
         {
             List<ProductDto> products = _productRepository.SearchFor(p => p.Offers.Any(o => o.MerchantId == message.Id)).ToList();
 
             foreach (var prod in products)
             {
                 var offer = prod.Offers.Where(o => o.MerchantId == message.Id).FirstOrDefault();
-                _commandSender.Send(new ActivateMerchantOnOffer(offer.Id, prod.Id, message.Id));
+                await _commandSender.Send(new ActivateMerchantOnOffer(offer.Id, prod.Id, message.Id));
             }
         }
 
-        public void Handle(MerchantDeactivated message)
+        public async Task Handle(MerchantDeactivated message)
         {
             List<ProductDto> products = _productRepository.SearchFor(p => p.Offers.Any(o => o.MerchantId == message.Id)).ToList();
 
             foreach (var prod in products)
             {
                 var offer = prod.Offers.Where(o => o.MerchantId == message.Id).FirstOrDefault();
-                _commandSender.Send(new DeactivateMerchantOnOffer(offer.Id, prod.Id, message.Id, offer.Version));
+                await _commandSender.Send(new DeactivateMerchantOnOffer(offer.Id, prod.Id, message.Id, offer.Version));
             }
         }
     }

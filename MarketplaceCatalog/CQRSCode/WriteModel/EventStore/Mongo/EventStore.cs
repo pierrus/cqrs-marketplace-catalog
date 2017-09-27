@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
+using System.Threading;
 using CQRSlite.Events;
 using MongoDB.Bson.Serialization;
 using MongoDB.Driver;
@@ -18,11 +20,11 @@ namespace CQRSCode.WriteModel.EventStore.Mongo
         private readonly IMongoCollection<IEvent> _collection;
         
 
-        public EventStore(IEventPublisher publisher, CQRSCode.ReadModel.Repository.MongoOptions mongoOptions, IList<Type> events)
+        public EventStore(IEventPublisher publisher, CQRSCode.ReadModel.Repository.MongoOptions mongoOptions, IList<EventType> events)
         {
             _publisher = publisher;
 
-            if (!BsonClassMap.IsClassMapRegistered(@events[0]))
+            if (!BsonClassMap.IsClassMapRegistered(@events[0].Type))
             {
                 // Insuffisant car quand les entités sont enregistrées en tant que IEvent, seuls les champs de l'interface sont persistés
                 // BsonClassMap.RegisterClassMap<ProductCreated>(cm => { cm.AutoMap(); cm.unmap } );
@@ -43,8 +45,8 @@ namespace CQRSCode.WriteModel.EventStore.Mongo
 
                 foreach (var @event in events)
                 {
-                    BsonClassMap m = new BsonClassMap(@event);
-                    @event.GetProperties().ToList().ForEach(p => m.MapProperty(p.Name));
+                    BsonClassMap m = new BsonClassMap(@event.Type);
+                    @event.Type.GetProperties().ToList().ForEach(p => m.MapProperty(p.Name));
                     BsonClassMap.RegisterClassMap(m);
                 }
             }
@@ -54,17 +56,17 @@ namespace CQRSCode.WriteModel.EventStore.Mongo
             _collection = _database.GetCollection<IEvent>("events");
         }
 
-        public void Save<T>(IEnumerable<IEvent> events)
+        public async Task Save(IEnumerable<IEvent> events, CancellationToken cancellationToken = default(CancellationToken))
         {
             foreach (var @event in events)
             {
                 _collection.InsertOne(@event);
-                _publisher.Publish(@event);
+                await _publisher.Publish(@event);
             }
         }
 
         // Don't forget to create the index according to this query
-        public IEnumerable<IEvent> Get<T>(Guid aggregateId, Int32 fromVersion)
+        public async Task<IEnumerable<IEvent>> Get(Guid aggregateId, Int32 fromVersion, CancellationToken cancellationToken = default(CancellationToken))
         {
             var builder = Builders<IEvent>.Filter;
             var filter = builder.Eq("Id", aggregateId) & builder.Gt("Version", fromVersion);

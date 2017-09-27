@@ -1,4 +1,7 @@
-﻿using CQRSlite.Domain;
+﻿using System;
+using System.Threading;
+using System.Threading.Tasks;
+using CQRSlite.Domain;
 using CQRSlite.Tests.Substitutes;
 using Xunit;
 
@@ -25,12 +28,22 @@ namespace CQRSlite.Tests.Domain
         }
 
         [Fact]
-        public void Should_publish_events()
+        public async Task Should_publish_events()
         {
             _aggregate.DoSomething();
-            _session.Add(_aggregate);
-            _session.Commit();
+            await _session.Add(_aggregate);
+            await _session.Commit();
             Assert.Equal(1, _eventPublisher.Published);
+        }
+
+        [Fact]
+        public async Task Should_forward_cancellation_token()
+        {
+            var token = new CancellationToken();
+            _aggregate.DoSomething();
+            await _session.Add(_aggregate, token);
+            await _session.Commit(token);
+            Assert.Equal(token, _eventPublisher.Token);
         }
     }
 }

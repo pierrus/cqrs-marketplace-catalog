@@ -1,4 +1,5 @@
-﻿using CQRSCode.WriteModel.Commands;
+﻿using System.Threading.Tasks;
+using CQRSCode.WriteModel.Commands;
 using CQRSCode.WriteModel.Domain;
 using CQRSlite.Commands;
 using CQRSlite.Domain;
@@ -16,25 +17,25 @@ namespace CQRSCode.WriteModel.Handlers
             _session = session;
         }
 
-        public void Handle(CreateCategory message)
+        public async Task Handle(CreateCategory message)
         {
             var category = new Category(message.Id, message.Name, message.ParentId);
-            _session.Add(category);
-            _session.Commit();
+            await _session.Add(category);
+            await _session.Commit();
         }
 
-        public void Handle(ActivateCategory message)
+        public async Task Handle(ActivateCategory message)
         {
-            var category = _session.Get<Category>(message.Id, message.ExpectedVersion);
+            var category = await _session.Get<Category>(message.Id, message.ExpectedVersion);
+            await _session.Commit();
             category.Activate();
-            _session.Commit();
         }
 
-        public void Handle(DeactivateCategory message)
+        public async Task Handle(DeactivateCategory message)
         {
-            var category = _session.Get<Category>(message.Id, message.ExpectedVersion);
+            var category = await _session.Get<Category>(message.Id, message.ExpectedVersion);
+            await _session.Commit();
             category.Deactivate();
-            _session.Commit();
         }
     }
 }

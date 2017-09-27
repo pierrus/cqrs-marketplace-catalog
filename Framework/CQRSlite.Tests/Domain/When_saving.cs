@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 using CQRSlite.Domain;
 using CQRSlite.Domain.Exception;
 using CQRSlite.Tests.Substitutes;
@@ -38,62 +40,73 @@ namespace CQRSlite.Tests.Domain
             _aggregate.DoSomething();
             _session.Add(_aggregate);
             _session.Commit();
-            Assert.Equal(0, _aggregate.GetUncommittedChanges().Count());
+            Assert.Equal(0, _aggregate.GetUncommittedChanges().Length);
         }
         
         [Fact]
-        public void Should_add_new_aggregate()
+        public async Task Should_add_new_aggregate()
         {
             var agg = new TestAggregateNoParameterLessConstructor(1);
             agg.DoSomething();
-            _session.Add(agg);
-            _session.Commit();
+            await _session.Add(agg);
+            await _session.Commit();
             Assert.Equal(1, _eventStore.Events.Count);
         }
 
         [Fact]
-        public void Should_set_date()
+        public async Task Should_set_date()
         {
             var agg = new TestAggregateNoParameterLessConstructor(1);
             agg.DoSomething();
-            _session.Add(agg);
-            _session.Commit();
+            await _session.Add(agg);
+            await _session.Commit();
             Assert.InRange(_eventStore.Events.First().TimeStamp, DateTimeOffset.UtcNow.AddSeconds(-1), DateTimeOffset.UtcNow.AddSeconds(1));
         }
 
         [Fact]
-        public void Should_set_version()
+        public async Task Should_set_version()
         {
             var agg = new TestAggregateNoParameterLessConstructor(1);
             agg.DoSomething();
             agg.DoSomething();
-            _session.Add(agg);
-            _session.Commit();
+            await _session.Add(agg);
+            await _session.Commit();
             Assert.Equal(1, _eventStore.Events.First().Version);
             Assert.Equal(2, _eventStore.Events.Last().Version);
         }
 
         [Fact]
-        public void Should_set_id()
+        public async Task Should_set_id()
         {
             var id = Guid.NewGuid();
             var agg = new TestAggregateNoParameterLessConstructor(1, id);
             agg.DoSomething();
-            _session.Add(agg);
-            _session.Commit();
+            await _session.Add(agg);
+            await _session.Commit();
             Assert.Equal(id, _eventStore.Events.First().Id);
         }
 
         [Fact]
-        public void Should_clear_tracked_aggregates()
+        public async Task Should_clear_tracked_aggregates()
         {
             var agg = new TestAggregate(Guid.NewGuid());
-            _session.Add(agg);
+            await _session.Add(agg);
             agg.DoSomething();
-            _session.Commit();
+            await _session.Commit();
             _eventStore.Events.Clear();
 
-            Assert.Throws<AggregateNotFoundException>(() => _session.Get<TestAggregate>(agg.Id));
+            await Assert.ThrowsAsync<AggregateNotFoundException>(async () => await _session.Get<TestAggregate>(agg.Id));
+        }
+
+        [Fact]
+        public async Task Should_forward_cancellation_token()
+        {
+            var token = new CancellationToken();
+            var agg = new TestAggregate(Guid.NewGuid());
+            await _session.Add(agg, token);
+            agg.DoSomething();
+            await _session.Commit(token);
+            Assert.Equal(token, _eventStore.Token);
         }
     }
 }

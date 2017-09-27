@@ -1,4 +1,5 @@
-﻿using CQRSCode.ReadModel.Dtos;
+﻿using System.Threading.Tasks;
+using CQRSCode.ReadModel.Dtos;
 using CQRSCode.ReadModel.Events;
 using CQRSCode.ReadModel.Repository;
 using CQRSlite.Events;
@@ -19,14 +20,14 @@ namespace CQRSCode.ReadModel.Handlers
             _productRepository = productRepository;
         }
 
-        public void Handle(ProductCreated message)
+        public async Task Handle(ProductCreated message)
         {
             _productRepository.Insert(new ProductDto(message.Id, null, message.Name, message.Description,
                                             message.IsActivated, message.IsVisible, message.Version,
                                             message.EAN, message.UPC));
         }
 
-        public void Handle(OfferCreated message)
+        public async Task Handle(OfferCreated message)
         {
             ProductDto prod = _productRepository.GetById(message.Id);
 
@@ -37,7 +38,7 @@ namespace CQRSCode.ReadModel.Handlers
             _productRepository.Update(prod);
         }
 
-        public void Handle(OfferStockSet message)
+        public async Task Handle(OfferStockSet message)
         {
             ProductDto prod = _productRepository.GetById(message.Id);
 
@@ -48,7 +49,7 @@ namespace CQRSCode.ReadModel.Handlers
             _productRepository.Update(prod);
         }
 
-        public void Handle(ProductDisplayed message)
+        public async Task Handle(ProductDisplayed message)
         {
             ProductDto prod = _productRepository.GetById(message.Id);
 
@@ -57,7 +58,7 @@ namespace CQRSCode.ReadModel.Handlers
             _productRepository.Update(prod);
         }
 
-        public void Handle(ProductHidden message)
+        public async Task Handle(ProductHidden message)
         {
             ProductDto prod = _productRepository.GetById(message.Id);
 
@@ -66,7 +67,7 @@ namespace CQRSCode.ReadModel.Handlers
             _productRepository.Update(prod);
         }
 
-        public void Handle(OfferDisplayed message)
+        public async Task Handle(OfferDisplayed message)
         {
             ProductDto prod = _productRepository.GetById(message.Id);
 
@@ -76,7 +77,7 @@ namespace CQRSCode.ReadModel.Handlers
             _productRepository.Update(prod);
         }
 
-        public void Handle(OfferHidden message)
+        public async Task Handle(OfferHidden message)
         {
             ProductDto prod = _productRepository.GetById(message.Id);
 

@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.Linq;
 using CQRSlite.Events;
+using System.Threading.Tasks;
+using System.Threading;
 
 namespace CQRSCode.WriteModel.EventStore
 {
@@ -15,23 +17,25 @@ namespace CQRSCode.WriteModel.EventStore
             _publisher = publisher;
         }
 
-        public void Save<T>(IEnumerable<IEvent> events)
+        public async Task Save(IEnumerable<IEvent> events, CancellationToken cancellationToken = default(CancellationToken))
         {
             foreach (var @event in events)
             {
                 List<IEvent> list;
                 _inMemoryDb.TryGetValue(@event.Id, out list);
+
                 if (list == null)
                 {
                     list = new List<IEvent>();
                     _inMemoryDb.Add(@event.Id, list);
                 }
+
                 list.Add(@event);
-                _publisher.Publish(@event);
+                await _publisher.Publish(@event);
             }
         }
 
-        public IEnumerable<IEvent> Get<T>(Guid aggregateId, int fromVersion)
+        public async Task<IEnumerable<IEvent>> Get(Guid aggregateId, int fromVersion, CancellationToken cancellationToken = default(CancellationToken))
         {
             List<IEvent> events;
             _inMemoryDb.TryGetValue(aggregateId, out events);

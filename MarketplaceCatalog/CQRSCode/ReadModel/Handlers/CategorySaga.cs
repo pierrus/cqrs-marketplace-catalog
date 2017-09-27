@@ -1,4 +1,5 @@
-﻿using CQRSCode.ReadModel.Dtos;
+﻿using System.Threading.Tasks;
+using CQRSCode.ReadModel.Dtos;
 using CQRSCode.ReadModel.Events;
 using CQRSCode.ReadModel.Repository;
 using CQRSlite.Events;
@@ -26,7 +27,7 @@ namespace CQRSCode.ReadModel.Handlers
             _commandSender = commandSender;
         }
 
-        public void Handle(CategoryActivated message)
+        public async Task Handle(CategoryActivated message)
         {
             IList<ProductDto> products = _productRepository
                                             .SearchFor(p => p.CategoryId == message.Id)
@@ -34,7 +35,7 @@ namespace CQRSCode.ReadModel.Handlers
 
             foreach (var prod in products)
             {
-                _commandSender.Send<ActivateCategoryOnProduct>(new ActivateCategoryOnProduct(prod.Id, message.Id));
+                await _commandSender.Send<ActivateCategoryOnProduct>(new ActivateCategoryOnProduct(prod.Id, message.Id));
             }
         }
     }

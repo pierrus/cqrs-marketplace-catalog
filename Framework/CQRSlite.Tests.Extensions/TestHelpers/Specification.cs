@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 using CQRSlite.Commands;
 using CQRSlite.Domain;
 using CQRSlite.Domain.Exception;
@@ -11,7 +13,7 @@ namespace CQRSlite.Tests.Extensions.TestHelpers
 {
     public abstract class Specification<TAggregate, THandler, TCommand> 
         where TAggregate: AggregateRoot
-        where THandler : class, ICommandHandler<TCommand>
+        where THandler : class
         where TCommand : ICommand
     {
 
@@ -34,22 +36,37 @@ namespace CQRSlite.Tests.Extensions.TestHelpers
             var snapshotStrategy = new DefaultSnapshotStrategy();
             var repository = new SnapshotRepository(snapshotstorage, snapshotStrategy, new Repository(eventstorage), eventstorage);
             Session = new Session(repository);
+            Aggregate = GetAggregate().Result;
 
-            try
+            dynamic handler = BuildHandler();
+            if (handler is ICancellableCommandHandler<TCommand>)
             {
-                Aggregate = Session.Get<TAggregate>(Guid.Empty);
+                handler.Handle(When(), new CancellationToken());
             }
-            catch (AggregateNotFoundException)
+            else if(handler is ICommandHandler<TCommand>)
             {
-
+                handler.Handle(When());
             }
-
-            var handler = BuildHandler();
-            handler.Handle(When());
+            else
+            {
+                throw new InvalidCastException($"{nameof(handler)} is not a command handler of type {typeof(TCommand)}");
+            }
 
             Snapshot = snapshotstorage.Snapshot;
             PublishedEvents = eventpublisher.PublishedEvents;
             EventDescriptors = eventstorage.Events;
+        }
+
+        private async Task<TAggregate> GetAggregate()
+        {
+            try
+            {
+                return await Session.Get<TAggregate>(Guid.Empty);
+            }
+            catch (AggregateNotFoundException)
+            {
+                return null;
+            }
         }
     }
 
@@ -62,14 +79,15 @@ namespace CQRSlite.Tests.Extensions.TestHelpers
 
         public Snapshot Snapshot { get; set; }
 
-        public Snapshot Get(Guid id)
+        public Task<Snapshot> Get(Guid id, CancellationToken cancellationToken = default(CancellationToken))
         {
-            return Snapshot;
+            return Task.FromResult(Snapshot);
         }
 
-        public void Save(Snapshot snapshot)
+        public Task Save(Snapshot snapshot, CancellationToken cancellationToken = default(CancellationToken))
         {
             Snapshot = snapshot;
+            return Task.CompletedTask;
         }
     }
 
@@ -80,9 +98,10 @@ namespace CQRSlite.Tests.Extensions.TestHelpers
             PublishedEvents = new List<IEvent>();
         }
 
-        public void Publish<T>(T @event) where T : IEvent
+        public Task Publish<T>(T @event, CancellationToken cancellationToken = default(CancellationToken)) where T : class, IEvent
         {
             PublishedEvents.Add(@event);
+            return Task.CompletedTask;
         }
 
         public IList<IEvent> PublishedEvents { get; set; }
@@ -100,16 +119,17 @@ namespace CQRSlite.Tests.Extensions.TestHelpers
 
         public List<IEvent> Events { get; set; }
 
-        public void Save<T>(IEnumerable<IEvent> events)
+        public Task Save(IEnumerable<IEvent> events, CancellationToken cancellationToken = default(CancellationToken))
         {
             Events.AddRange(events);
-            foreach (var @event in events)
-                _publisher.Publish(@event);
+            return Task.WhenAll(events.Select(evt =>_publisher.Publish(evt, cancellationToken)));
+                
         }
 
-        public IEnumerable<IEvent> Get<T>(Guid aggregateId, int fromVersion)
+        public Task<IEnumerable<IEvent>> Get(Guid aggregateId, int fromVersion, CancellationToken cancellationToken = default(CancellationToken))
         {
-            return Events.Where(x => x.Version > fromVersion && x.Id == aggregateId);
+            var events = Events.Where(x => x.Id == aggregateId && x.Version > fromVersion);
+            return Task.FromResult(events);
         }
     }
 }

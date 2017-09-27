@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Threading;
+using System.Threading.Tasks;
 using CQRSlite.Domain;
 using CQRSlite.Domain.Exception;
 using CQRSlite.Tests.Substitutes;
@@ -9,11 +11,12 @@ namespace CQRSlite.Tests.Domain
     public class When_getting_an_aggregate
     {
 	    private ISession _session;
+        private TestEventStore _eventStore;
 
         public When_getting_an_aggregate()
         {
-            var eventStore = new TestEventStore();
-            _session = new Session(new Repository(eventStore));
+            _eventStore = new TestEventStore();
+            _session = new Session(new Repository(_eventStore));
         }
 
         [Fact]
@@ -24,60 +27,68 @@ namespace CQRSlite.Tests.Domain
         }
 
         [Fact]
-        public void Should_apply_events()
+        public async Task Should_apply_events()
         {
-            var aggregate = _session.Get<TestAggregate>(Guid.NewGuid());
-            Assert.Equal(2,aggregate.DidSomethingCount);
+            var aggregate = await _session.Get<TestAggregate>(Guid.NewGuid());
+            Assert.Equal(2, aggregate.DidSomethingCount);
         }
 
         [Fact]
-        public void Should_fail_if_aggregate_do_not_exist()
+        public async Task Should_fail_if_aggregate_do_not_exist()
         {
-            Assert.Throws<AggregateNotFoundException>(() => _session.Get<TestAggregate>(Guid.Empty));
+            await Assert.ThrowsAsync<AggregateNotFoundException>(async () => await _session.Get<TestAggregate>(Guid.Empty));
         }
 
         [Fact]
-	    public void Should_track_changes()
+	    public async Task Should_track_changes()
 	    {
             var agg = new TestAggregate(Guid.NewGuid());
-            _session.Add(agg);
-            var aggregate = _session.Get<TestAggregate>(agg.Id);
-            Assert.Equal(agg,aggregate);
+            await _session.Add(agg);
+            var aggregate = await _session.Get<TestAggregate>(agg.Id);
+	        Assert.Equal(agg, aggregate);
 	    }
 
         [Fact]
-        public void Should_get_from_session_if_tracked()
+        public async Task Should_get_from_session_if_tracked()
         {
             var id = Guid.NewGuid();
-            var aggregate = _session.Get<TestAggregate>(id);
-            var aggregate2 = _session.Get<TestAggregate>(id);
+            var aggregate = await _session.Get<TestAggregate>(id);
+            var aggregate2 = await _session.Get<TestAggregate>(id);
 
             Assert.Equal(aggregate, aggregate2);
         }
 
         [Fact]
-        public void Should_throw_concurrency_exception_if_tracked()
+        public async Task Should_throw_concurrency_exception_if_tracked()
         {
             var id = Guid.NewGuid();
-            _session.Get<TestAggregate>(id);
+            await _session.Get<TestAggregate>(id);
 
-            Assert.Throws<ConcurrencyException>(() => _session.Get<TestAggregate>(id, 100));
+            await Assert.ThrowsAsync<ConcurrencyException>(async () => await _session.Get<TestAggregate>(id, 100));
         }
 
         [Fact]
-        public void Should_get_correct_version()
+        public async Task Should_get_correct_version()
         {
             var id = Guid.NewGuid();
-            var aggregate = _session.Get<TestAggregate>(id);
+            var aggregate = await _session.Get<TestAggregate>(id);
 
-            Assert.Equal(3,aggregate.Version);
+            Assert.Equal(3, aggregate.Version);
         }
 
         [Fact]
-        public void Should_throw_concurrency_exception()
+        public async Task Should_throw_concurrency_exception()
         {
             var id = Guid.NewGuid();
-            Assert.Throws<ConcurrencyException>(() => _session.Get<TestAggregate>(id, 1));
+            await Assert.ThrowsAsync<ConcurrencyException>(async () => await _session.Get<TestAggregate>(id, 1));
+        }
+
+        [Fact]
+        public async Task Should_forward_cancellation_token()
+        {
+            var token = new CancellationToken();
+            await _session.Get<TestAggregate>(Guid.NewGuid(), cancellationToken: token);
+            Assert.Equal(token, _eventStore.Token);
         }
     }
 }

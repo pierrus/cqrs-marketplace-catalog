@@ -1,0 +1,17 @@
+﻿@model CQRSWeb.Models.Product
+@{
+    ViewData["Title"] = "New Product";
+}
+
+<h2>Add a new product</h2>
+@using (Html.BeginForm("Add"))
+{
+    <p>
+        Name: <input type="text" asp-for="Name" /><span asp-validation-for="Name"></span><br />
+        Description: <input type="text" asp-for="Description" /><span asp-validation-for="Description"></span><br />
+        EAN: <input type="text" asp-for="EAN" /><span asp-validation-for="EAN"></span><br />
+        UPC: <input type="text" asp-for="UPC" /><span asp-validation-for="UPC"></span><br />
+    </p>
+
+    <input type="submit" />
+}

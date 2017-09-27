@@ -1,4 +1,5 @@
-﻿using CQRSlite.Domain;
+﻿using System.Threading.Tasks;
+using CQRSlite.Domain;
 using CQRSlite.Events;
 using CQRSlite.Snapshots;
 using CQRSlite.Tests.Substitutes;
@@ -42,9 +43,9 @@ namespace CQRSlite.Tests.Snapshots
         }
 
         [Fact]
-        public void Should_get_aggregate_back_correct()
+        public async Task Should_get_aggregate_back_correct()
         {
-            Assert.Equal(150, _session.Get<TestSnapshotAggregate>(_aggregate.Id).Number);
+            Assert.Equal(150, (await _session.Get<TestSnapshotAggregate>(_aggregate.Id)).Number);
         }
     }
 }

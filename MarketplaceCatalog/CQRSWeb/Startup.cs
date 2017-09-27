@@ -4,6 +4,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using CQRSlite.Bus;
 using CQRSlite.Commands;
+using CQRSlite.Messages;
 using CQRSlite.Events;
 using CQRSlite.Domain;
 using CQRSCode.WriteModel.EventStore.Mongo;
@@ -17,6 +18,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Configuration.Json;
 using System.IO;
+using CQRSCode.ReadModel.Events;
 
 namespace CQRSWeb
 {
@@ -29,7 +31,7 @@ namespace CQRSWeb
         {
             var builder = new ConfigurationBuilder()
              .SetBasePath(Directory.GetCurrentDirectory())
-            .AddJsonFile("appsettings.json");
+             .AddJsonFile("appsettings.json");
 
             Configuration = builder.Build();
 
@@ -41,7 +43,14 @@ namespace CQRSWeb
             services.AddSingleton<IEventPublisher>(y => y.GetService<InProcessBus>());
             services.AddSingleton<IHandlerRegistrar>(y => y.GetService<InProcessBus>());
             services.AddScoped<ISession, Session>();
-            services.AddSingleton<IEventStore, EventStore>();
+
+            //Factory to turn scanned IEvents into Type
+            services.AddSingleton<IEventStore, EventStore>
+                (sProvider => new EventStore(
+                    sProvider.GetRequiredService<IEventPublisher>(),
+                    sProvider.GetRequiredService<CQRSCode.ReadModel.Repository.MongoOptions>(),
+                    sProvider.GetServices<EventType>().ToList()));
+
             services.AddScoped<ICache, CQRSlite.Cache.MemoryCache>();
             services.AddScoped<IRepository>(y => new CacheRepository(new Repository(y.GetService<IEventStore>()), y.GetService<IEventStore>(), y.GetService<ICache>()));
 
@@ -67,34 +76,47 @@ namespace CQRSWeb
                 .FromAssemblies(typeof(CategoryCommandHandlers).GetTypeInfo().Assembly)
                     .AddClasses(classes => classes.Where(x => {
                         var allInterfaces = x.GetInterfaces();
-                        return 
-                            allInterfaces.Any(y => y.GetTypeInfo().IsGenericType && y.GetTypeInfo().GetGenericTypeDefinition() == typeof(ICommandHandler<>)) ||
-                            allInterfaces.Any(y => y.GetTypeInfo().IsGenericType && y.GetTypeInfo().GetGenericTypeDefinition() == typeof(IEventHandler<>));
-                            // allInterfaces.Any(y => y.GetTypeInfo().IsGenericType && y.GetTypeInfo().GetGenericTypeDefinition() == typeof(ICommandHandler<>));
+                        return
+                            allInterfaces.Any(y => y.GetTypeInfo().IsGenericType && y.GetTypeInfo().GetGenericTypeDefinition() == typeof(IHandler<>)) ||
+                            allInterfaces.Any(y => y.GetTypeInfo().IsGenericType && y.GetTypeInfo().GetGenericTypeDefinition() == typeof(ICancellableHandler<>));
                     }))
                     .AsSelf()
                     .WithTransientLifetime()
             );
 
             //Register tous les IEvent
-            services.Scan(scan => scan
-                .FromAssemblies(typeof(CQRSCode.ReadModel.Events.ProductCreated).GetTypeInfo().Assembly)
-                    .AddClasses(classes => classes.Where(x => {
-                        var allInterfaces = x.GetInterfaces();
-                        return 
-                            allInterfaces.Any(y => y.GetTypeInfo().IsGenericType && y.GetTypeInfo().GetGenericTypeDefinition() == typeof(IEvent));
-                    }))
-                    .AsImplementedInterfaces()
-                    .WithTransientLifetime()
-            );
+            // services.Scan(scan => scan
+            //     .FromAssemblies(typeof(CQRSCode.ReadModel.Events.ProductCreated).GetTypeInfo().Assembly)
+            //         .AddClasses(classes => classes.Where(x => {
+            //             var allInterfaces = x.GetInterfaces();
+
+            //             return
+            //                 allInterfaces.Any(y => y == typeof(IEvent));
+            //         }))
+            //         .As(type => EventType<type>)
+            //         //.AsImplementedInterfaces()
+            //         .WithTransientLifetime()
+            // );
+
+            typeof(CQRSCode.ReadModel.Events.ProductCreated)
+                .GetTypeInfo().Assembly.ExportedTypes
+                .ToList().ForEach(type => {
+                    if (type.GetInterfaces().Any(iType => iType == typeof(IEvent)))
+                    {
+                        services.AddTransient<EventType, EventType>(sProvider => new EventType(type));
+                    }
+                });
+
+            foreach (var service in services)
+            {
+                System.Console.WriteLine(service.ServiceType.Name + " " + service.ServiceType.AssemblyQualifiedName);
+            }
 
             //Register bus
             var serviceProvider = services.BuildServiceProvider();
+
             var registrar = new BusRegistrar(new DependencyResolver(serviceProvider));
             registrar.Register(typeof(CategoryCommandHandlers));
-            // USELESS --> toute l'assembly est inspectée à partir du type passé en paramètre
-            // registrar.Register(typeof(MerchantCommandHandlers));
-            // registrar.Register(typeof(ProductCommandHandlers));
 
             // Add framework services.
             services.AddMvc();

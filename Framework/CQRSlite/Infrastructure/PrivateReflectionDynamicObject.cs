@@ -1,59 +1,61 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Dynamic;
-using System.Linq;
 using System.Reflection;
+using System.Linq;
+
 
 namespace CQRSlite.Infrastructure
 {
     internal class PrivateReflectionDynamicObject : DynamicObject
     {
-        public object RealObject { get; set; }
         private const BindingFlags bindingFlags = BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic;
+        private static readonly ConcurrentDictionary<int, CompiledMethodInfo> cachedMembers = new ConcurrentDictionary<int, CompiledMethodInfo>();
 
-        internal static object WrapObjectIfNeeded(object o)
-        {
-            // Don't wrap primitive types, which don't have many interesting internal APIs
-            if (o == null || o.GetType().GetTypeInfo().IsPrimitive || o is string)
-            {
-                return o;
-            }
+        public object RealObject { get; set; }
 
-            return new PrivateReflectionDynamicObject { RealObject = o };
-        }
-
-        // Called when a method is called
         public override bool TryInvokeMember(InvokeMemberBinder binder, object[] args, out object result)
         {
-            result = InvokeMemberOnType(RealObject.GetType(), RealObject, binder.Name, args);
-
-            // Wrap the sub object if necessary. This allows nested anonymous objects to work.
-            result = WrapObjectIfNeeded(result);
+            var methodname = binder.Name;
+            var type = RealObject.GetType();
+            var hash = 23;
+            hash = hash * 31 + type.GetHashCode();
+            hash = hash * 31 + methodname.GetHashCode();
+            var argtypes = new Type[args.Length];
+            for (var i = 0; i < args.Length; i++)
+            {
+                var argtype = args[i].GetType();
+                argtypes[i] = argtype;
+                hash = hash * 31 + argtype.GetHashCode();
+            }
+            var method = cachedMembers.GetOrAdd(hash, x =>
+            {
+                var m = GetMember(type, methodname, argtypes);
+                return m == null ? null : new CompiledMethodInfo(m, type);
+            });
+            result = method?.Invoke(RealObject, args);
 
             return true;
         }
 
-        private static object InvokeMemberOnType(Type type, object target, string name, object[] args)
+        private static MethodInfo GetMember(Type type, string name, Type[] argtypes)
         {
-            var argtypes = new Type[args.Length];
-            for (var i = 0; i < args.Length; i++)
-            {
-                argtypes[i] = args[i].GetType();
-            }
             while (true)
             {
-                //TODO: change when .net core implements GetMethod correct to get access to private methods
-                var member = type.GetMethods(bindingFlags).FirstOrDefault(m => m.Name == name && m.GetParameters().Select(p => p.ParameterType).SequenceEqual(argtypes));
-                //var member = type.GetMethod(name, bindingFlags, argtypes);
+                var member = type.GetMethods(bindingFlags)
+                    .FirstOrDefault(m => m.Name == name && m.GetParameters()
+                                             .Select(p => p.ParameterType).SequenceEqual(argtypes));
 
                 if (member != null)
                 {
-                    return member.Invoke(target, args);
+                    return member;
                 }
-                if (type.GetTypeInfo().BaseType == null)
+                var t = type.GetTypeInfo().BaseType;
+                if (t == null)
                 {
                     return null;
                 }
-                type = type.GetTypeInfo().BaseType;
+                type = t;
             }
         }
     }

@@ -42,5 +42,24 @@ namespace CQRSWeb.Controllers
 
             return View();
         }
+
+        [HttpGet]
+        public ActionResult Add()
+        {
+            return View();
+        }
+
+        [HttpPost]
+        public ActionResult Add(Models.Product newProduct)
+        {
+            if (!ModelState.IsValid)
+                return View();
+
+            Guid newId = Guid.NewGuid();
+
+            _commandSender.Send<CreateProduct>(new CreateProduct(newId, newProduct.Name, newProduct.Description, newProduct.EAN, newProduct.UPC));
+
+            return RedirectToAction("Details", new { id = newId });
+        }
     }
 }

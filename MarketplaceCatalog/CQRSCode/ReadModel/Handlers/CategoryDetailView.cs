@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading.Tasks;
 using CQRSCode.ReadModel.Dtos;
 using CQRSCode.ReadModel.Events;
 using CQRSCode.ReadModel.Repository;
@@ -19,7 +20,7 @@ namespace CQRSCode.ReadModel.Handlers
             _categoryRepository = categoryRepository;
         }
 
-        public void Handle(CategoryCreated message)
+        public async Task Handle(CategoryCreated message)
         {
             var cat = new CategoryDto(message.Id, message.Name,
                                         message.Activated, false,
@@ -29,7 +30,7 @@ namespace CQRSCode.ReadModel.Handlers
         }
 
         // Bubble up visible products to parent categories
-        public void Handle(CategoryDeactivated message)
+        public async Task Handle(CategoryDeactivated message)
         {
             var cat = _categoryRepository.GetById(message.Id);
 
@@ -48,7 +49,7 @@ namespace CQRSCode.ReadModel.Handlers
         }
 
         // Bubble up visible products to parent categories
-        public void Handle(CategoryActivated message)
+        public async Task Handle(CategoryActivated message)
         {
             var cat = _categoryRepository.GetById(message.Id);
 
@@ -68,7 +69,7 @@ namespace CQRSCode.ReadModel.Handlers
 
         // Garder le compte des produits publiés
         // Mettre à jour le nombre de produits dans la hiérarchie de catégories parentes
-        public void Handle(ProductPublishedToCategory message)
+        public async Task Handle(ProductPublishedToCategory message)
         {
             var cat = _categoryRepository.GetById(message.Id);
 
@@ -89,7 +90,7 @@ namespace CQRSCode.ReadModel.Handlers
 
         // Garder le compte des produits publiés
         // Mettre à jour le nombre de produits dans la hiérarchie de catégories parentes
-        public void Handle(ProductUnpublishedFromCategory message)
+        public async Task Handle(ProductUnpublishedFromCategory message)
         {
             var cat = _categoryRepository.GetById(message.Id);
 

@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using CQRSlite.Events;
 using Newtonsoft.Json;
+using System.Threading.Tasks;
+using System.Threading;
 
 namespace CQRSCode.WriteModel.EventStore.Postgre
 {
@@ -17,18 +19,18 @@ namespace CQRSCode.WriteModel.EventStore.Postgre
             _eDBContext = eDBContext;
         }
 
-        public void Save<T>(IEnumerable<IEvent> events)
+        public async Task Save(IEnumerable<IEvent> events, CancellationToken cancellationToken = default(CancellationToken))
         {
             foreach (var @event in events)
             {
                 _eDBContext.Events.Add(ToDBModel(@event));
-                _publisher.Publish(@event);
+                await _publisher.Publish(@event);
             }
 
             _eDBContext.SaveChanges();
         }
 
-        public IEnumerable<IEvent> Get<T>(Guid aggregateId, int fromVersion)
+        public async Task<IEnumerable<IEvent>> Get(Guid aggregateId, int fromVersion, CancellationToken cancellationToken = default(CancellationToken))
         {
             return _eDBContext
                     .Events

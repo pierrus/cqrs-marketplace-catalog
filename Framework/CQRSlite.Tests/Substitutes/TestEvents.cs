@@ -1,4 +1,7 @@
 ﻿using System;
+using System.Threading;
+using System.Threading.Tasks;
+using CQRSlite.Domain.Exception;
 using CQRSlite.Events;
 
 namespace CQRSlite.Tests.Substitutes
@@ -8,24 +11,41 @@ namespace CQRSlite.Tests.Substitutes
         public Guid Id { get; set; }
         public int Version { get; set; }
         public DateTimeOffset TimeStamp { get; set; }
+        public bool LongRunning { get; set; }
     }
-    public class TestAggregateDidSomeethingElse : IEvent
+
+    public class TestAggregateDidSomethingElse : IEvent
     {
         public Guid Id { get; set; }
         public int Version { get; set; }
         public DateTimeOffset TimeStamp { get; set; }
     }
 
-    public class TestAggregateDidSomethingHandler : IEventHandler<TestAggregateDidSomething>
+    public class TestAggregateDidSomethingHandler : ICancellableEventHandler<TestAggregateDidSomething>,
+        IEventHandler<TestAggregateDidSomethingElse>
     {
-        public void Handle(TestAggregateDidSomething message)
+        public async Task Handle(TestAggregateDidSomething message, CancellationToken token)
         {
+            if (message.LongRunning)
+                await Task.Delay(50, token);
             lock (message)
             {
+                if (message.Version == -10)
+                    throw new ConcurrencyException(message.Id);
                 TimesRun++;
+                Token = token;
             }
         }
 
+        public Task Handle(TestAggregateDidSomethingElse message)
+        {
+            TimesRun++;
+            return Task.CompletedTask;
+        }
+
+
+        public CancellationToken Token { get; private set; }
         public int TimesRun { get; private set; }
+
     }
 }
