@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 
 namespace CQRSCode.ReadModel.Dtos
 {
@@ -17,21 +18,29 @@ namespace CQRSCode.ReadModel.Dtos
         public Boolean IsVisible { get; set; }
 
         //Visible products directly
-        public Int32 VisibleProducts { get; set; }
+        public Int32 VisibleOffers { get; set; }
 
-        public Int32 TotalProducts { get; set; }
+        public Int32 TotalOffers { get; set; }
+
+        public List<Guid> OffersIds { get; set; }
+
+        public List<Guid> VisibleOffersIds { get; set; }
 
         public MerchantDto(Guid id, String name, String email, Boolean isActivated,
-                            Boolean isVisible, int visibleProducts, int totalProducts, int version)
+                            Boolean isVisible, int visibleOffers, int totalOffers, 
+                            List<Guid> offersIds, List<Guid> visibleOffersIds, int version
+                            )
         {
             Id = id;
             Name = name;
             Email = email;
             IsActivated = isActivated;
             IsVisible = isVisible;
-            VisibleProducts = visibleProducts;
+            VisibleOffers = visibleOffers;
             Version = version;
-            TotalProducts = totalProducts;
+            TotalOffers = totalOffers;
+            OffersIds = offersIds;
+            VisibleOffersIds = visibleOffersIds;
         }
     }
 }

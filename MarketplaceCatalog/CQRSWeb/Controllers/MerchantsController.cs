@@ -5,6 +5,7 @@ using CQRSlite.Commands;
 using CQRSCode.ReadModel.Dtos;
 using Microsoft.AspNetCore.Mvc;
 using System;
+using AutoMapper;
 
 namespace CQRSWeb.Controllers
 {
@@ -12,12 +13,15 @@ namespace CQRSWeb.Controllers
     {
         private readonly ICommandSender _commandSender;
         private readonly IRepository<MerchantDto> _merchantsRepository;
+        private readonly IMapper _mapper;
 
         public MerchantsController(ICommandSender commandSender,
-                                    IRepository<MerchantDto> merchantsRepository)
+                                    IRepository<MerchantDto> merchantsRepository,
+                                    IMapper mapper)
         {
             _merchantsRepository = merchantsRepository;
             _commandSender = commandSender;
+            _mapper = mapper;
         }
 
         public ActionResult Index(Int32? startIndex, Int32? limit)
@@ -35,8 +39,8 @@ namespace CQRSWeb.Controllers
 
         public ActionResult Details(Guid id)
         {
-            ViewData.Model = _merchantsRepository.GetById(id);
-
+            var mercDto = _merchantsRepository.GetById(id);
+            ViewData.Model = _mapper.Map<MerchantDto, Models.Merchant>(mercDto);
             return View();
         }
 

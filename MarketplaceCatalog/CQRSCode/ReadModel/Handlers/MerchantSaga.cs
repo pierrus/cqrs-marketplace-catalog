@@ -38,11 +38,9 @@ namespace CQRSCode.ReadModel.Handlers
         {
             List<ProductDto> products = _productRepository.SearchFor(p => p.Offers.Any(o => o.MerchantId == message.Id)).ToList();
 
-            foreach (var prod in products)
-            {
-                var offer = prod.Offers.Where(o => o.MerchantId == message.Id).FirstOrDefault();
-                await _commandSender.Send(new DeactivateMerchantOnOffer(offer.Id, prod.Id, message.Id, offer.Version));
-            }
+            foreach (var product in products)
+                foreach (var offer in product.Offers.Where(o => o.MerchantId == message.Id))
+                    await _commandSender.Send(new DeactivateMerchantOnOffer(offer.Id, product.Id, message.Id));
         }
     }
 }

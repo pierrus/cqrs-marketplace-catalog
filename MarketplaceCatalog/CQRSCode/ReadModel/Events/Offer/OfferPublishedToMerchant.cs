@@ -9,13 +9,13 @@ namespace CQRSCode.ReadModel.Events
 	{
         public Guid OfferId { get; set; }
 
-        public Guid MerchandId { get; set; }
+        public Guid MerchantId { get; set; }
 
         public OfferPublishedToMerchant(Guid id, Guid offerId, Guid merchantId)
         {
             Id = id;
             OfferId = offerId;
-            MerchandId = merchantId;
+            MerchantId = merchantId;
         }
 
         public Guid Id { get; set; }

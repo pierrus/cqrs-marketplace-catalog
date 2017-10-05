@@ -19,6 +19,10 @@ using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Configuration.Json;
 using System.IO;
 using CQRSCode.ReadModel.Events;
+using CQRSCode.ReadModel.Dtos;
+using CQRSWeb.Models;
+using AutoMapper;
+using AutoMapper.Configuration;
 
 namespace CQRSWeb
 {
@@ -107,10 +111,10 @@ namespace CQRSWeb
                     }
                 });
 
-            foreach (var service in services)
-            {
-                System.Console.WriteLine(service.ServiceType.Name + " " + service.ServiceType.AssemblyQualifiedName);
-            }
+            // foreach (var service in services)
+            // {
+            //     System.Console.WriteLine(service.ServiceType.Name + " " + service.ServiceType.AssemblyQualifiedName);
+            // }
 
             //Register bus
             var serviceProvider = services.BuildServiceProvider();
@@ -120,6 +124,16 @@ namespace CQRSWeb
 
             // Add framework services.
             services.AddMvc();
+
+            // services.AddAutoMapper(typeof(Startup));
+
+            var config = new AutoMapper.MapperConfiguration(cfg =>
+            {
+                cfg.AddProfile<MappingProfile>();
+            });
+
+            var mapper = config.CreateMapper();
+            services.AddSingleton<IMapper>(mapper);
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -134,6 +148,8 @@ namespace CQRSWeb
                     name: "default",
                     template: "{controller=Home}/{action=Index}/{id?}");
             });
+
+            AutoMapper.Mapper.Initialize(c => c.AddProfile<MappingProfile>());
         }
     }
 }

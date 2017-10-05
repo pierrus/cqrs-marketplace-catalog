@@ -1,4 +1,4 @@
-﻿@model CQRSCode.ReadModel.Dtos.MerchantDto
+﻿@model CQRSWeb.Models.Merchant
 @{
     ViewData["Title"] = "Merchant details";
 }
@@ -10,7 +10,9 @@
     Email: @Model.Email<br />
     IsActivated: @Model.IsActivated<br />
     IsVisible: @Model.IsVisible<br />
-    VisibleProducts: @Model.VisibleProducts<br /><br />
+    VisibleOffers: @Model.VisibleOffers<br />
+    TotalOffers: @Model.TotalOffers<br />
+    Version: @Model.Version<br /><br /><br />
 
     @if (Model.IsActivated) {
         @Html.ActionLink("Deactivate", "Deactivate", new { id = Model.Id, version = Model.Version })

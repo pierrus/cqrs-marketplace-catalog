@@ -1,0 +1,29 @@
+﻿@model CQRSWeb.Models.Offer
+@{
+    ViewData["Title"] = "New Offer";
+    var merchantListItems =
+                Model.Merchants
+                .ToList().Select(a =>
+                {
+                    return new SelectListItem()
+                    {
+                        Text = a.Name,
+                        Value = a.Id.ToString(),
+                        Selected = false
+                    };
+                });
+}
+
+<h2>Add a new offer on "@Model.ProductName"</h2>
+@using (Html.BeginForm("AddOffer"))
+{
+    <p>
+        <input type="hidden" asp-for="ProductId" />
+        Merchant: @Html.DropDownList("MerchantId", merchantListItems, "Select merchant", new { @class = "form-control" })<br />
+        Stock: <input type="text" asp-for="Stock" /><span asp-validation-for="Stock"></span><br />
+        Price: <input type="text" asp-for="Price" /><span asp-validation-for="Price"></span><br />
+        SKU: <input type="text" asp-for="SKU" /><span asp-validation-for="SKU"></span><br />
+    </p>
+
+    <input type="submit" />
+}

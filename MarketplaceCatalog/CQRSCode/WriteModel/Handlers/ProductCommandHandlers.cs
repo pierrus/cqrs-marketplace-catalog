@@ -36,7 +36,7 @@ namespace CQRSCode.WriteModel.Handlers
             var product = await _session.Get<Product>(message.ProductId);
             var merchant = await _session.Get<Merchant>(message.MerchantId);
 
-            product.CreateOffer(message.Id, message.ProductId, message.Stock, message.Price, merchant.Activated, merchant.Name, message.SKU);
+            product.CreateOffer(message.Id, message.MerchantId, message.Stock, message.Price, merchant.Activated, merchant.Name, message.SKU);
 
             await _session.Commit();
         }
@@ -59,7 +59,7 @@ namespace CQRSCode.WriteModel.Handlers
 
         public async Task Handle(DeactivateMerchantOnOffer message)
         {
-            var product = await _session.Get<Product>(message.ProductId, message.ExpectedVersion);
+            var product = await _session.Get<Product>(message.ProductId);
             product.DeactivateMerchant(message.Id, message.MerchantId);
 
             await _session.Commit();
@@ -67,7 +67,7 @@ namespace CQRSCode.WriteModel.Handlers
 
         public async Task Handle(ActivateMerchantOnOffer message)
         {
-            var product = await _session.Get<Product>(message.ProductId, message.ExpectedVersion);
+            var product = await _session.Get<Product>(message.ProductId);
             product.ActivateMerchant(message.Id, message.MerchantId);
 
             await _session.Commit();

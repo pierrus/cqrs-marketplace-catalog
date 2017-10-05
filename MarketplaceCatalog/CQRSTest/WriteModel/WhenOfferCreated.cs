@@ -31,7 +31,7 @@ namespace CQRSTests.WriteModel
             return new List<IEvent>()
             {
                 new MerchantCreated(_merchantId, "myMerchant", "mymerchant@gmail.com") { Version = 1, TimeStamp = DateTimeOffset.Now },
-                new ProductCreated(_productId, "myProduct", "myDescription", true, true) { Version = 1, TimeStamp = DateTimeOffset.Now }
+                new ProductCreated(_productId, "myProduct", "myDescription", true, false) { Version = 1, TimeStamp = DateTimeOffset.Now }
             };
         }
 
@@ -53,7 +53,7 @@ namespace CQRSTests.WriteModel
             Assert.IsType<OfferCreated>(PublishedEvents.First());
             Assert.IsType<ProductDisplayed>(PublishedEvents[1]);
             Assert.IsType<OfferDisplayed>(PublishedEvents[2]);
-            Assert.IsType<OfferPublishedToMerchant>(PublishedEvents.Last());
+            Assert.IsType<OfferPublishedToMerchant>(PublishedEvents[3]);
         }
 
         [Then]

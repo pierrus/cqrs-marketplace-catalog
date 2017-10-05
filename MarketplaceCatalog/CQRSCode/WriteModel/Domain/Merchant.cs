@@ -28,13 +28,13 @@ namespace CQRSCode.WriteModel.Domain
 
         public void Deactivate()
         {
-            if(!Activated) throw new InvalidOperationException("already deactivated");
+            //if(!Activated) throw new InvalidOperationException("already deactivated");
             ApplyChange(new MerchantDeactivated(Id));
         }
 
         public void Activate()
         {
-            if(Activated) throw new InvalidOperationException("already activated");
+            //if(Activated) throw new InvalidOperationException("already activated");
             ApplyChange(new MerchantActivated(Id));
         }
 

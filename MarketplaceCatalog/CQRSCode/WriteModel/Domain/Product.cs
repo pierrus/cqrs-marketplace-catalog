@@ -104,7 +104,7 @@ namespace CQRSCode.WriteModel.Domain
 
         public void CreateOffer(Guid offerId, Guid merchantId, Int16 stock, Decimal price, Boolean merchantActivated, String merchantName, String sku)
         {
-            if (Offers.Any(o => o.MerchantId == merchantId)) throw new InvalidOperationException("already an offer for this merchant");
+            //if (Offers.Any(o => o.MerchantId == merchantId)) throw new InvalidOperationException("already an offer for this merchant");
             ApplyChange(new OfferCreated(this.Id, offerId, merchantId, stock, price, merchantActivated, sku, merchantName, true, false));
 
             EvaluateProductStatusChange();

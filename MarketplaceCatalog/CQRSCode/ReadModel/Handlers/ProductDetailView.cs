@@ -4,6 +4,7 @@ using CQRSCode.ReadModel.Events;
 using CQRSCode.ReadModel.Repository;
 using CQRSlite.Events;
 using System.Linq;
+using System.Collections.Generic;
 
 namespace CQRSCode.ReadModel.Handlers
 {
@@ -31,9 +32,11 @@ namespace CQRSCode.ReadModel.Handlers
         {
             ProductDto prod = _productRepository.GetById(message.Id);
 
+            if (prod.Offers == null) prod.Offers = new List<OfferDto>();
             prod.Offers.Add(new OfferDto(message.OfferId, message.MerchantId, message.MerchantName, 
                                             message.IsActivated, message.IsVisible, message.Stock,
                                             message.Price, message.Version, message.SKU));
+            prod.Version = message.Version;
 
             _productRepository.Update(prod);
         }
@@ -45,6 +48,7 @@ namespace CQRSCode.ReadModel.Handlers
             OfferDto offerDto = prod.Offers.Where(o => o.Id == message.OfferId).FirstOrDefault();
 
             offerDto.Stock = message.Stock;
+            prod.Version = message.Version;
 
             _productRepository.Update(prod);
         }
@@ -54,6 +58,7 @@ namespace CQRSCode.ReadModel.Handlers
             ProductDto prod = _productRepository.GetById(message.Id);
 
             prod.IsVisible = true;
+            prod.Version = message.Version;
 
             _productRepository.Update(prod);
         }
@@ -63,6 +68,7 @@ namespace CQRSCode.ReadModel.Handlers
             ProductDto prod = _productRepository.GetById(message.Id);
 
             prod.IsVisible = false;
+            prod.Version = message.Version;
 
             _productRepository.Update(prod);
         }
@@ -73,6 +79,7 @@ namespace CQRSCode.ReadModel.Handlers
 
             OfferDto offer = prod.Offers.Where(o => o.Id == message.OfferId).FirstOrDefault();
             offer.IsVisible = true;
+            prod.Version = message.Version;
 
             _productRepository.Update(prod);
         }
@@ -83,6 +90,7 @@ namespace CQRSCode.ReadModel.Handlers
 
             OfferDto offer = prod.Offers.Where(o => o.Id == message.OfferId).FirstOrDefault();
             offer.IsVisible = false;
+            prod.Version = message.Version;
 
             _productRepository.Update(prod);
         }
